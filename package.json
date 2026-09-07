@@ -1,0 +1,89 @@
+{
+  "name": "dsh-remote-web-gateway",
+  "version": "0.2.2",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.19.0",
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "files": [
+    "dist/",
+    "src/"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./gateway": {
+      "types": "./dist/gateway.d.ts",
+      "default": "./dist/gateway.js"
+    },
+    "./auth": {
+      "types": "./dist/auth.d.ts",
+      "default": "./dist/auth.js"
+    },
+    "./config": {
+      "types": "./dist/config.d.ts",
+      "default": "./dist/config.js"
+    },
+    "./pairing": {
+      "types": "./dist/pairing.d.ts",
+      "default": "./dist/pairing.js"
+    },
+    "./pairing-routes": {
+      "types": "./dist/pairing-routes.d.ts",
+      "default": "./dist/pairing-routes.js"
+    },
+    "./device-session": {
+      "types": "./dist/device-session.d.ts",
+      "default": "./dist/device-session.js"
+    },
+    "./public-origin": {
+      "types": "./dist/public-origin.d.ts",
+      "default": "./dist/public-origin.js"
+    },
+    "./quick-tunnel": {
+      "types": "./dist/quick-tunnel.d.ts",
+      "default": "./dist/quick-tunnel.js"
+    },
+    "./cloudflared-assets": {
+      "types": "./dist/cloudflared-assets.d.ts",
+      "default": "./dist/cloudflared-assets.js"
+    },
+    "./logger": {
+      "types": "./dist/logger.d.ts",
+      "default": "./dist/logger.js"
+    },
+    "./headers": {
+      "types": "./dist/headers.d.ts",
+      "default": "./dist/headers.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.build.json",
+    "check": "pnpm run typecheck && pnpm run test && pnpm run build",
+    "start": "node dist/index.js",
+    "start:quick": "node dist/quick-entry.js",
+    "dev": "tsx src/index.ts",
+    "dev:quick": "tsx src/quick-entry.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "http-proxy-3": "^1.23.3",
+    "jose": "^6.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "undici": "^6.28.0",
+    "vitest": "^4.1.8",
+    "ws": "^8.21.3"
+  }
+}

@@ -1,0 +1,56 @@
+name: ci
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  check:
+    name: typecheck + test + build (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install pnpm (repo declares pnpm@11.19.0)
+        run: npm install -g pnpm@11.19.0
+
+      # ------------------------------------------------------------ root gate
+      - name: Install root deps
+        working-directory: .
+        run: pnpm install --frozen-lockfile
+
+      - name: Root check (typecheck + test + build)
+        working-directory: .
+        run: pnpm run check
+
+      # --------------------------------------------------- plugin gate
+      # Root build must run first: plugin prebuild vendors the root dist/.
+      - name: Install plugin deps
+        working-directory: plugin
+        run: pnpm install --frozen-lockfile
+
+      - name: Plugin tests
+        working-directory: plugin
+        run: pnpm run test
+
+      - name: Plugin host typecheck only
+        # Full `pnpm run verify` also typechecks the client bundle against the
+        # @deepseek-ai peer types. On dsh core 0.1.2-rc.1 those types narrow the
+        # slot/Context API (TS2344), which is a host-version type drift, not a
+        # runtime issue (see docs/COMPATIBILITY.md "Fork 实测补充"). The client
+        # bundle is still exercised by `build` (tsdown) + `client-boundary`.
+        working-directory: plugin
+        run: pnpm exec tsc -p tsconfig.json --noEmit
+
+      - name: Plugin build (tsc + client bundle + client-boundary)
+        working-directory: plugin
+        run: pnpm run build
+
+      - name: Pack audit (files respected, boundary gate runs via prepack)
+        working-directory: plugin
+        run: pnpm pack --pack-destination "$env:RUNNER_TEMP"

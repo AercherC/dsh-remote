@@ -1,0 +1,74 @@
+MIT License Notices
+===================
+
+This plugin adapts portions of the following MIT-licensed projects. The full
+MIT license text follows; the original copyright holders retain copyright.
+
+Adapted sources (this round):
+
+1. dsh-web-mobile (MIT, https://github.com/mexiaosqwq/dsh-web-mobile, Copyright (c) 2026
+   mexiaosqwq) — the current NOTICE adapts code from this project at the
+   versions listed below; the upstream file layout has evolved (v1.5.0 moved
+   the overlay interactions out of `src/client/MobileNavOverlay.tsx` into
+   `src/client/effects/phone-chrome.ts`), so the mappings below describe the
+   upstream source the fragments were adapted from at adaptation time:
+   - src/client/styles/layout.css.ts  → adapted into
+     src/client/mobile/mobile.css.ts (drawer, conversation text, composer
+     row, settings dialog sheet rules, and — R13/v0.2.1 — the active-phase
+     header-yielding + always-visible sidebar entry placement rules)
+   - src/client/styles/misc.css.ts    → adapted into the tablet/wide-mobile
+     sheet-cap and desktop-guard media queries in the same file
+   - src/client/effects/phone-chrome.ts → adapted into
+     src/client/mobile/index.ts (viewport-fit + theme-color + gesturestart)
+   - src/client/MobileNavOverlay.tsx  → adapted into
+     src/client/mobile/MobileOverlay.tsx (frame marker, backdrop, floating
+     open button, drawer close-on-navigate; upstream v1.5.0 removed this
+     file and moved the same interactions into effects/phone-chrome.ts)
+   - R13/v0.2.1 addition: the upstream v1.5.0 MobileNavToggle design idea
+     (an always-available sidebar entry for active conversations bound to
+     `ctx.layout.toggleSidebar()`, coexisting with the session-header
+     crumbs) was re-implemented inside src/client/mobile/MobileOverlay.tsx
+     + mobile.css.ts rather than copied as a header-slot component.
+   Adapted fragments keep the original structure where practical; the marker
+   attribute was renamed to `data-dsh-remote-mobile` and unrelated plugin
+   compat (aionui / git graph / stats) was deliberately excluded.
+
+2. DeepSeek Harness (MIT, https://github.com/deepseek-ai/deepseek-harness)
+   - packages/client/tsdown.client.ts  → the plugin's tsdown.config.ts
+     mirrors the client-bundle preset (loader handoff, externals, purity
+     gate, CSS handling) for an out-of-tree package
+   - R14/v0.2.1: packages/host/directory-picker-browse/src/index.ts (the
+     official browse directory-picker backend) → the read-only directory
+     listing semantics in src/workspace-browse.ts (opendir streaming into a
+     name-sorted bounded window with a `truncated` flag, symlink
+     enterability probes, breadcrumb ancestry, POSIX dot-prefix hidden
+     flags, the fully-qualified path fence, and abort-aware file reads).
+     Only the `list` primitive is adapted; create/delete/modify are
+     deliberately absent. The mobile client surface
+     (src/client/workspace-browse/MobileDirectoryFlow.tsx) mirrors the
+     official ui-directory-picker-browse semantics (initial level = Host
+     home, Home crumb inside the home subtree, selection = current level)
+     without depending on the official packages at runtime.
+   - Design tokens and the Button primitive are used as-is from the DSH
+     installation at runtime (no code copied).
+
+The MIT License
+---------------
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.

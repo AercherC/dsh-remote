@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx"
+  },
+  "include": ["src/client/**/*.ts", "src/client/**/*.tsx", "src/ua.ts", "src/wire.ts"]
+}

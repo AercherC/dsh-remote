@@ -1,0 +1,10 @@
+# dsh-remote-web-gateway bundle patch: one host row whose package also
+# declares dsh.client (the browser half is discovered through the package.json
+# dsh.client declaration, exactly like the shipped ui-cordis row).
+#
+# The plugin row carries NO user-visible configuration: every setting has a
+# safe default (OS-assigned loopback ports, 30-day sessions, 5-minute tickets)
+# and can be overridden in the profile's own cordis.patch.yml by id.
+- insert:
+    - id: dsh-remote-web-gateway
+      name: dsh-remote-web-gateway

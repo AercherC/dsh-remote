@@ -1,0 +1,7 @@
+packages:
+  - .
+
+# pnpm denies dependency lifecycle scripts by default. esbuild's reviewed
+# postinstall selects its platform binary for tsx/vitest.
+allowBuilds:
+  esbuild: true

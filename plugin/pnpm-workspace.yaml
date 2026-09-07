@@ -1,0 +1,12 @@
+# The plugin is its own standalone pnpm project (it must be installable into a
+# DSH profile, so it cannot be a member of the gateway repo's workspace).
+packages: []
+
+# The @deepseek-ai peers are satisfied by the DSH installation at runtime (the
+# profile's healed node_modules farm); never fetch them here.
+autoInstallPeers: false
+
+allowBuilds:
+  esbuild: true
+  rolldown: true
+  lightningcss: true

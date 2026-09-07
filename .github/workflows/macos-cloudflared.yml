@@ -1,0 +1,46 @@
+name: macOS cloudflared pipeline
+
+# Real-macOS validation of the pinned darwin cloudflared supply chain.
+# macos-15-intel is Intel x64 (darwin-x64); macos-15 is Apple Silicon (darwin-arm64).
+# Both run the production extract/verify code on the real asset (download →
+# size+SHA-256 → extract → --version). Full tunnel + pairing needs a live DSH
+# host, so it stays a manual real-device step.
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  darwin:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15-intel
+            arch: x64
+            label: darwin-x64 (Intel)
+          - runner: macos-15
+            arch: arm64
+            label: darwin-arm64 (Apple Silicon)
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build core (dist/)
+        run: pnpm run build
+
+      - name: Validate darwin cloudflared pipeline (${{ matrix.label }})
+        run: node scripts/macos-cloudflared-ci.mjs ${{ matrix.arch }}
