@@ -4,353 +4,157 @@
 
 </div>
 
-# DSH Remote Web Gateway
+# dsh-remote — DSH Remote Web Gateway（增强版）
 
-## **手机也能继续用 DeepSeek Harness。**
+**在手机 / 平板浏览器上，继续使用电脑上正在运行的 DeepSeek Harness（DSH）：**
+**看进度、继续对话、查看结果、处理需要确认的操作——项目和工具仍然留在电脑上。**
 
-### **扫个码，电脑上的 DSH 随身带走。**
-
-### **链接不是权限 · 一次性配对 · 每台设备独立授权、随时撤销**
-
-### **无需远程桌面 · 无需 SSH · 无需公网 IP / 端口转发**
-
-![DSH Remote Web Gateway](docs/assets/hero-zh.png)
----
-
-## **电脑上的 DSH 还在干活，你人已经走了？**
-
-下班路上，Agent 还在跑任务。
-
-你只是想掏出手机看看：
-
-### **做到哪了？结果出来了吗？**
-
-出门以后，它突然停下来等你确认。
-
-或者已经躺床上了，你突然想到：
-
-> “刚才那个需求还得补一句。”
-
-你真正想要的其实很简单：
-
-### **打开手机，继续使用电脑上正在运行的那个 DeepSeek Harness。**
-
-**DSH Remote Web Gateway 就是干这个的。**
-
-不用把整个 Windows 桌面塞进手机，也不用在手机里重新部署一套 Agent。
-
-**项目、会话、工具和 Agent 继续留在电脑上。**
-
-## **你只是把 DSH 带在了身边。**
+本项目是开源项目
+[**summer1238/dsh-remote-web-gateway**](https://github.com/summer1238/dsh-remote-web-gateway)
+（作者 summer1238，MIT 协议）的**二次开发（fork）版本**。
+上游的成果归上游，本仓库只对自己的增量负责：**先声明上游，再讲我设计的东西。**
 
 ---
 
-## ⭐ [**这个项目刚好解决了你的痛点？给它一个 Star →**](https://github.com/AercherC/dsh-remote)
+## 一、上游项目声明
 
-### **Star 不是安装门槛，也不会影响任何功能。**
+| | |
+|---|---|
+| 上游项目 | [dsh-remote-web-gateway](https://github.com/summer1238/dsh-remote-web-gateway)，作者 summer1238 |
+| 上游基线 | v0.2.2（main @ `5b2db96`，2026-08-28），MIT |
+| 本仓库 | 在该基线上二次开发；增补改动的版权归 AercherC（见 [LICENSE](LICENSE)） |
 
-### 它只是让我知道：
+**继承自上游、并非本仓库原创的核心能力**（上游成熟且经过真机验证，直接复用、不重复造轮子）：
 
-## **这个项目值得继续维护，也能让更多正在找“手机远程 DSH”的人看到它。**
+- 一次性扫码 / 8 位配对码的安全配对（票据 5 分钟有效、单次原子认领）
+- 独立设备授权：每台设备独立 Device Session，可逐台或全部撤销（磁盘只存 SHA-256）
+- Cloudflare Quick Tunnel 一键公网传输：电脑主动出站建立，无需公网 IP、端口转发或 VPS
+- 认证层网关：仅回环监听的反向代理 + Host / Origin 改写，透明代理官方 DSH Web UI
+- 手机 UI 注入层（只对明确手机生效）与只读的远程工作区目录选择器
+- 更新提醒（用户确认才安装，不偷偷重启正在工作的 DSH）与下载源 / 代理网络自动回退
+- cloudflared 供应链校验：固定版本 + SHA-256 复验、Windows Authenticode 签名校验、损坏自动重下
+
+此外，插件内还适配了其它 MIT 开源项目的片段（[dsh-web-mobile](https://github.com/mexiaosqwq/dsh-web-mobile)、
+[deepseek-harness](https://github.com/deepseek-ai/deepseek-harness)），逐条归因见
+[plugin/NOTICE](plugin/NOTICE)。
+
+> 想用原版？直接安装上游发布的 npm 包 `dsh-remote-web-gateway`，或访问上游仓库。
+> 本仓库是独立的 fork 增强版，**没有占用也没有替代上游的发布渠道**。
 
 ---
 
-# 🚀 **一条命令，装完就能用**
+## 二、我的设计与功能增量
+
+在继承上游架构（传输与认证解耦、配对 / 设备会话 / 管理面仅回环）的前提下，
+我按"先取证、再实现、自动化全绿 ≠ 真人验收"的纪律做自己的增量。
+以下功能均已写入本仓库代码，随版本维护：
+
+### 🪟 Windows / DSH Desktop 安装体验
+
+- [scripts/install-windows.ps1](scripts/install-windows.ps1)：把插件装进 **DSH Desktop 的 `desktop` profile** 的一键安装脚本——
+  ASCII 路径暂存、改依赖前自动快照、失败自动回滚、只走官方 `dsh plugin` 命令；
+  在 DSH Desktop 2.0.5 / core 0.1.2-rc.1 上实测"手机远程全流程"通过。
+- 配套的 Windows CI 质量门（[.github/workflows/ci.yml](.github/workflows/ci.yml)）：
+  每次 push / PR 在 Windows 上跑 typecheck + test + build + pack。
+
+### 🔢 长期配对码（与一次性配对并存，ToDesk 式）
+
+- 设置页「手机连接」新增 **一次性配对 / 长期配对码** 两个 Tab；长期码同样支持扫码或输码连接。
+- 长期码**永久有效、手动重置**：默认不展示；远程控制开启后，进入「长期配对码」Tab 且当前无码时会自动生成一次随机码 + QR（不会自动轮换）；可一键「换一组新码」，旧码立即失效。
+- **自定义码**：6–12 位字母（A–Z）/ 数字（0–9），便于记忆；服务端二次校验格式。
+- **重启后原码仍可查看**：明文只存于"当前用户 + SYSTEM"ACL 保护目录（与设备凭据同一信任域）；
+  换组 / 设置自定义码即原子覆盖，不留旧明文历史。
+- 语义明确：换组 / 自定义只影响**未来的新配对**，已连接设备不受影响（强制下线请用「撤销全部设备」）。
+- 安全：与一次性配对**共享同一 claim 限速预算**；凭据比较使用 timing-safe 比较；
+  长期码只走 `/pair#<secret>` 深链或输码，不接收 query 明文。
+- 实现位置：root 库层 `src/pairing-long.ts` 与 `src/pairing-routes.ts` 的 claim 回退；
+  plugin 侧 runtime / rpc / wire 接口与设置页「手机连接」卡 UI（zh / en 文案）。
+
+### 📡 Quick Tunnel 断连诊断与恢复体验
+
+- `src/quick-tunnel.ts` 在隧道就绪后**持续监听边缘连接**，记录失联 / 回归事件与时长（edgeState、degraded 起止、事件时间线）。
+- 瞬时失联 → 设置页显示「**短暂失联 · 自动恢复中**」，公网地址与已授权设备不变、**无需重新扫码**；
+  只有进程退出（换 URL）才显示明确的错误与一键「重新开启」。
+- 诊断区展示最近边缘事件时间线；fail-closed 语义保持不变（仅进程退出 / 用户停止才关闭公网入口）。
+
+### ⚖️ 与上游的产品差异
+
+- 按产品决策**移除了 GitHub 身份绑定**：上游可选配的 GitHub Device Flow 登录，在本仓库的设置页 / 配对入口 /
+  RPC / 配置中均不再出现。认证只保留：一次性配对、长期配对码、独立设备会话。
+
+> 本仓库只对以上增量负责；任何上游能力的问题请先到上游仓库反馈。
+
+---
+
+## 三、快速开始（源码形态）
+
+> 本 fork 尚未发布 npm 包或正式 Release，以下路径为"本地构建 + 安装"。
+
+**环境**：Node `^22.19 || >=24`，pnpm 11。
 
 ```bash
-dsh plugin --profile web add dsh-remote-web-gateway
+# 1) 仓库根：装依赖并构建（root build 会产出 gateway 运行时 dist）
+pnpm install
+pnpm run check        # typecheck + test + build
+
+# 2) plugin：装依赖并构建出可安装的插件产物
+cd plugin
+pnpm install
+pnpm run build
+pnpm pack             # 生成 dsh-remote-web-gateway-0.2.2.tgz
 ```
 
-> 💻 在 **DSH Desktop（Windows GUI）** 上？插件可以装进 Desktop 的 `desktop` profile，
-> 但必须在 Desktop 关闭后由**外部终端/脚本**执行（运行中的 Desktop 不能被第二进程改依赖）：
-> `scripts\install-windows.ps1 -TarballPath <本地tgz>`，装完重启 DSH Desktop。
-> 详见 [Windows/Desktop 安装说明](docs/WINDOWS_DESKTOP_INSTALL.md)。
+**DSH Desktop（Windows GUI）**：先完全退出 Desktop，再在外部终端执行
 
-### 安装以后：
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\install-windows.ps1 -TarballPath <plugin 的 .tgz 路径>
+```
 
-## **重启 DSH → 设置 → 远程控制 → 开启远程控制 → 手机扫码**
+重启 DSH Desktop → 设置 → 远程控制 → 开启 → 手机扫码 / 输码。
 
-**就这么简单。**
+**无 GUI 的 `dsh web`**：`dsh plugin --profile web add <plugin 的 .tgz 路径>`，重启 DSH Web 后路径同上。
 
-### 📘 [**第一次用？打开《用户指南》 →**](docs/USER_GUIDE.md)
-
-安装、扫码、第二台设备、撤销权限、更新和常见问题，都在里面一步一步带你完成。
-
-### 🤖 [**不想自己装？让 AI 帮你安装 →**](docs/USER_GUIDE.md#让-ai-帮你安装)
-
-把项目链接和用户指南里准备好的提示词发给 DSH、Codex、Claude Code 或其它 Coding Agent。
-
-**能操作终端的 AI 可以直接协助安装；不能操作电脑的 AI，也可以按照官方文档一步一步带你完成。**
+> ⚠️ npm 上的 `dsh-remote-web-gateway` 是上游 summer1238 发布的**原版**；
+> 本仓库的改动没有发布到那个 npm 名，安装时请勿混淆。
 
 ---
 
-# **手机里的 DSH，不是“缩小版 Windows”**
-![DSH Remote Web Gateway](docs/assets/mobile-showcase-zh.png)
-传统远程桌面解决的是：
-
-> 怎么把整台电脑搬到手机屏幕里？
-
-我们解决的是：
-
-> ## **怎么让我离开电脑以后，继续使用 DSH？**
-
-电脑上的 Agent 继续工作。
-
-你在手机上：
-
-### **看进度 · 继续对话 · 查看结果 · 处理需要你确认的操作**
-
-手机看到的是 DSH。
-
-## **不是一个需要疯狂缩放和拖动的 Windows 桌面。**
-
----
-
-# **你只是想在手机上继续用 DSH，真的需要这么折腾吗？**
-
-### **为了看一眼 Agent，真的要远程整个 Windows？**
-
-不用。
-
-## **只把 DSH 带到手机上。**
-
-### **为了手机连电脑，真的要先买 VPS、配 SSH、改路由器端口？**
-
-默认不用。
-
-## **一键建立 Cloudflare Quick Tunnel。**
-
-### **为了手机使用 DSH，真的要重新部署一套 Agent？**
-
-不用。
-
-## **继续使用电脑上已经运行的 DSH、项目和工具。**
-
-### **为了方便，真的要让一个长期 Token 跟着链接到处跑？**
-
-我们选择了另一种方式：
-
-## **一次性配对 + 独立设备授权 + 随时撤销。**
-
----
-
-# **能连上只是第一步，安全才是默认设计。**
-
-![DSH Remote Web Gateway](docs/assets/security-model-zh.png)
-
-
-手机远程 DSH 本身并不难。
-
-**反向代理 + 内网穿透**，很快就能让手机打开一个 Web UI。
-
-真正困难的是：
-
-## **谁能进？**
-
-## **凭证泄露以后怎么办？**
-
-## **设备授权以后还能不能收回来？**
-
-因为 DSH 背后不是一个普通网页。
-
-它可能连接着：
-
-**你的项目源码、开发文件、本地工具，以及已经配置好的模型能力。**
-
-如果这是公司的开发电脑，一条设计得过于简单的远程入口，带来的风险也不只是“别人看到一个页面”。
-
-可能暴露的是开发环境。
-
-甚至有人可以不断调用你已经配置好的模型额度。
-
-### **一觉醒来发现 API 额度被刷掉，只是其中比较轻的一种后果。**
-
-所以我们没有把：
-
-> “手机已经能打开”
-
-当成：
-
-> “远程访问已经做完”。
-
-整个访问过程更接近：
+## 四、它怎么工作（简图）
 
 ```text
-临时连接
-    ↓
-一次性配对
-    ↓
-独立设备授权
-    ↓
-持续认证
-    ↓
-随时撤销
-    ↓
-DeepSeek Harness
+手机浏览器 ── HTTPS ──▶ Cloudflare Quick Tunnel（由电脑主动出站建立）
+                              │
+                              ▼
+                  本机回环 Remote Gateway
+                  （配对 / 长期码 / 设备会话认证 + 透明反向代理）
+                              │  127.0.0.1
+                              ▼
+                  正在运行的 DeepSeek Harness
+                  （项目、会话、工具、Agent 全部留在电脑上）
 ```
 
-## **链接不是权限。**
-
-拿到访问地址，不等于已经获得 DSH 控制权。
-
-## **配对凭证不是长期密码。**
-
-首次配对使用一次性凭证，而不是让一个长期万能 Token 跟着二维码和链接到处跑。
-
-## **每台设备独立授权。**
-
-不是所有手机共享同一把长期钥匙。
-
-## **授权可以收回来。**
-
-某台设备不再可信？
-
-**在电脑端撤销它。**
-
-想看完整安全边界、我们防什么以及不防什么：
-
-安全模型与信任边界见《用户指南》"安全"一节。
+"传输层（把公网流量送回本机）"与"认证层（谁能进）"解耦的架构设计来自上游；
+本仓库不重做这两层，只在其上叠加上述增量。
 
 ---
 
-# **一个反向代理就能搞定的事，为什么我们偏要做这么复杂？**
+## 五、安全与漏洞上报
 
-因为一个最小实现主要解决：
-
-> ## **怎么从外面打开这个网页？**
-
-而我们还想解决：
-
-> ## **怎么让它真正适合长期远程使用？**
-
-所以除了连接，我们还做了：
-
-**一次性配对 · 独立 Device Session · 单设备 / 全设备撤销 · HTTP / WebSocket 访问认证 · 本机管理面隔离**
-
-我们宁愿把这件事做复杂一点。
-
-## **也不愿意把“能打开”误认为“可以放心用”。**
+- **链接 ≠ 权限**：拿到公网地址不等于能进入 DSH；进入需要一次性配对或长期码换取独立的设备会话。
+- 长期码是**长期有效的强凭据**：界面已提示勿分享截图；可随时「换一组」使其立即失效。
+- 每台设备独立授权、可逐台或全部撤销；管理操作（开启 / 停止 / 撤销 / 更新）仅限本机回环，公网不可达。
+- 发现安全漏洞请走 GitHub **Security 页的私有上报**（不要开公开 Issue）。
 
 ---
 
-# **它到底怎么连接？**
+## 六、开源协议
 
-![DSH Remote Web Gateway](docs/assets/architecture-zh.png)
-```text
-手机浏览器
-     │
-     │ HTTPS
-     ▼
-Cloudflare Quick Tunnel
-     │
-     ▼
-DSH Remote Web Gateway
-     │
-     │ 127.0.0.1
-     ▼
-DeepSeek Harness
-```
-
-电脑主动向外建立 Tunnel。
-
-## **DeepSeek Harness 和 Gateway 仍然只监听本机。**
-
-所以默认不需要公网 IP，也不需要给路由器开放新的入站端口。
+[MIT License](LICENSE)。上游 dsh-remote-web-gateway 的版权归 summer1238；
+本仓库的增补改动版权归 AercherC。第三方适配组件的逐条归因见 [plugin/NOTICE](plugin/NOTICE)。
 
 ---
 
-# **你真正会用到的能力**
+## 七、致谢
 
-### 📱 **Phone 专门适配**
-不是把桌面 UI 硬缩进手机。
-
-### ⚡ **一键 Quick Tunnel**
-默认无需 VPS、SSH 和端口转发。
-
-### 🔐 **一次性扫码 / 8 位配对码**
-第一次设备接入简单直接。
-
-### 📱 **独立设备授权**
-多台设备分别拥有自己的访问权限。
-
-### 🚫 **随时撤销**
-单台设备或者全部设备，都能从电脑端收回权限。
-
-### 🌐 **网络自动适配**
-支持系统 / 环境代理，并在官方下载异常时尝试经过验证的备用下载路径。
-
-### 🔄 **更新提醒**
-发现新版本后通知你，由你确认安装，不偷偷重启正在工作的 DSH。
-
----
-
-# 📚 **文档**
-
-### 📘 [**用户指南**](docs/USER_GUIDE.md)
-**第一次使用，从这里开始。**
-
-里面还准备了可以直接复制给 AI 的安装 / 排障提示词。
-
-### 🧰 [**故障排查**](docs/TROUBLESHOOTING.md)
-Tunnel、下载、配对、网络、更新等常见问题。
-
-### 🧰 [**Windows / DSH Desktop 安装**](docs/WINDOWS_DESKTOP_INSTALL.md)
-在 DSH Desktop（Windows GUI）上一键安装与回滚。
-
-### 📋 [**CHANGELOG**](CHANGELOG.md)
-版本变化与更新内容。
-
----
-
-# 🤖 **遇到问题，也可以直接把项目链接交给 AI**
-
-```text
-https://github.com/AercherC/dsh-remote
-```
-
-把：
-
-### **项目链接 + 你的报错 / 截图**
-
-一起发给 DSH、Codex、Claude Code 或其它 AI。
-
-告诉它：
-
-> **先阅读本项目 README、User Guide 和 Troubleshooting，再按照项目当前文档帮我排查。**
-
-### 🤖 [**让 AI 帮你安装 / 排错 →**](docs/USER_GUIDE.md#让-ai-帮你安装)
-
----
-
-# **开源**
-
-这个项目会一直保持**免费开源**。
-
-如果它替你省下了一次远程桌面折腾、一台 VPS，或者只是让你下班以后还能舒服地继续用 DSH——
-
-那就已经值了。
-
-如果它对你也有帮助，欢迎给这个项目一个 ⭐：
-
-### ⭐ [**Star dsh-remote →**](https://github.com/AercherC/dsh-remote)
-
-本项目使用 [MIT License](LICENSE)。
-
-**DSH Remote Web Gateway（dsh-remote）是一个社区开源项目。**
-
----
-
-# [⭐ **如果它真的让你离开了电脑，欢迎右上角留下一个 Star**](https://github.com/AercherC/dsh-remote)
-
-![DSH Remote Web Gateway](docs/assets/continue-work.png)
-
-
-电脑上的 Agent 继续跑。
-
-你已经走出了办公室。
-
-然后从手机里继续把这个任务做完。
-
-## **这就是这个项目存在的意义。**
-
-### ⭐ [**请记得点星 Star DSH Remote Web Gateway，让更多 DSH 用户找到它 →**](https://github.com/AercherC/dsh-remote)
+感谢 summer1238 的开源工作，以及 dsh-web-mobile、DeepSeek Harness 等 MIT 项目的作者——
+没有这些公开成果，就不会有本仓库。

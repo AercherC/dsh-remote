@@ -4,353 +4,149 @@
 
 </div>
 
-# DSH Remote Web Gateway
+# dsh-remote — DSH Remote Web Gateway (enhanced)
 
-## **Keep using DeepSeek Harness from your phone.**
+**Keep using the DeepSeek Harness (DSH) that is running on your computer, from a phone / tablet browser:**
+**check progress, continue conversations, see results, and handle actions that need your confirmation —
+while projects and tools stay on the computer.**
 
-### **Scan a code, and the DSH on your computer goes with you.**
-
-### **A link is not permission · One-time pairing · Per-device authorization, revocable anytime**
-
-### **No remote desktop · No SSH · No public IP / port forwarding**
-
-![DSH Remote Web Gateway mobile access](docs/assets/hero-zh.png)
----
-
-## **Your DSH is still working on the computer — and you already left?**
-
-You are on your way home, and the Agent is still running tasks.
-
-You just want to pull out your phone and see:
-
-### **What's it doing? Did it finish?**
-
-Then it stops and waits for your confirmation while you're away.
-
-Or you're already in bed and you suddenly think:
-
-> "I still need to add one more thing to that request."
-
-What you actually want is simple:
-
-### **Open your phone and keep using the exact DeepSeek Harness that is running on your computer.**
-
-**That is what DSH Remote Web Gateway does.**
-
-No need to squeeze your whole Windows desktop into a phone, and no need to deploy a second Agent on your phone.
-
-**Projects, sessions, tools, and Agents stay on the computer.**
-
-## **You simply take DSH with you.**
+This repository is a **derivative (fork) build** of the open-source project
+[**summer1238/dsh-remote-web-gateway**](https://github.com/summer1238/dsh-remote-web-gateway)
+(by summer1238, MIT licensed). Credit for the upstream work stays with the upstream project;
+this repository is accountable only for its own additions. **Upstream first, then what I designed.**
 
 ---
 
-## ⭐ [**Does this project solve your problem? Give it a Star →**](https://github.com/AercherC/dsh-remote)
+## 1. Upstream project declaration
 
-### **A Star is not a requirement to install, and it changes nothing about the features.**
+| | |
+|---|---|
+| Upstream project | [dsh-remote-web-gateway](https://github.com/summer1238/dsh-remote-web-gateway) by summer1238 |
+| Upstream baseline | v0.2.2 (main @ `5b2db96`, 2026-08-28), MIT |
+| This repository | A derivative built on that baseline; copyright of the additional modifications belongs to AercherC (see [LICENSE](LICENSE)) |
 
-### It only lets me know:
+**Core capabilities inherited from upstream — NOT original to this repository** (they are mature and device-verified upstream, reused as-is rather than reinvented):
 
-## **This project is worth maintaining, and it helps more people searching for "DSH on your phone" find it.**
+- Secure pairing via one-time QR code / 8-digit code (ticket: 5-minute TTL, single-use atomic claim)
+- Per-device authorization: each device gets its own Device Session, revocable individually or globally (only SHA-256 hashes are stored on disk)
+- One-click Cloudflare Quick Tunnel transport: established outbound by the computer — no public IP, port forwarding, or VPS
+- The gateway authentication layer: a loopback-only reverse proxy that rewrites Host / Origin and transparently proxies the official DSH Web UI
+- A mobile UI injection layer (only applied to real phones) and a read-only remote workspace directory picker
+- Update reminders (you confirm before install; a running DSH is never restarted behind your back) with download-source / proxy network fallback
+- cloudflared supply-chain checks: pinned version + SHA-256 re-verification, Windows Authenticode signature check, automatic re-download on corruption
+
+The plugin also adapts fragments of other MIT open-source projects
+([dsh-web-mobile](https://github.com/mexiaosqwq/dsh-web-mobile) and
+[deepseek-harness](https://github.com/deepseek-ai/deepseek-harness)); item-by-item attribution is in
+[plugin/NOTICE](plugin/NOTICE).
+
+> Want the original? Install the upstream npm package `dsh-remote-web-gateway`, or visit the upstream repository.
+> This repository is an independent enhanced fork — it neither occupies nor replaces the upstream release channel.
 
 ---
 
-# 🚀 **One command, and you're ready**
+## 2. My design & feature additions
+
+The fork keeps the upstream architecture (transport / authentication decoupled, pairing + device sessions, loopback-only management) and adds its own work under a simple discipline: investigate first, then implement — and automated tests passing is not the same as real-device acceptance. Everything below is committed to the code in this repository and maintained with the version:
+
+### 🪟 Windows / DSH Desktop installation experience
+
+- [scripts/install-windows.ps1](scripts/install-windows.ps1): a one-click installer that puts the plugin into the **DSH Desktop `desktop` profile** — ASCII-path staging, automatic snapshot before touching dependencies, automatic rollback on failure, and it only goes through the official `dsh plugin` command. End-to-end "phone remote" flow verified on DSH Desktop 2.0.5 / core 0.1.2-rc.1.
+- A matching Windows CI quality gate ([.github/workflows/ci.yml](.github/workflows/ci.yml)): typecheck + test + build + pack on Windows for every push / PR.
+
+### 🔢 Long-term pairing code (alongside one-time pairing, ToDesk-style)
+
+- The settings "Phone connection" card gains two tabs: **One-time pairing / Long-term pairing code**; the long code can be used by scanning the QR or typing the code.
+- The long code is **permanent until manually reset**: hidden by default; once remote control is enabled, entering the "Long-term code" tab with no code auto-generates a random code + QR once (never auto-rotated); one click on "New code" instantly invalidates the old one.
+- **Custom codes** are supported: 6–12 characters of letters (A–Z) / digits (0–9) for easy memorization; the server re-validates the format.
+- **The code stays viewable after a restart**: plaintext is stored only under an ACL-protected directory (current user + SYSTEM, same trust domain as the device credentials); rotating or setting a custom code atomically overwrites it and leaves no plaintext history.
+- Clear semantics: rotating / customizing affects only **future pairing**; already-connected devices keep working (force them offline with "revoke all devices").
+- Security: shares the **same claim rate-limit budget** as one-time pairing; credential comparison is timing-safe; the long code is only accepted via the `/pair#<secret>` deep link or typed input, never as query plaintext.
+- Where: root library `src/pairing-long.ts` plus the claim fallback in `src/pairing-routes.ts`; plugin-side runtime / rpc / wire interfaces and the settings UI (zh / en copy).
+
+### 📡 Quick Tunnel disconnection diagnostics & recovery UX
+
+- `src/quick-tunnel.ts` now keeps **watching the edge connection after the tunnel is ready**, recording outage / recovery events and their durations (edgeState, degraded window, event timeline).
+- Momentary loss of connectivity → the settings page shows "**Briefly offline — recovering automatically**"; the public URL and authorized devices are unchanged and there is **no need to re-scan**. Only a process exit (new URL) shows a clear error plus a one-click "restart".
+- A diagnostics area shows the recent edge-event timeline; fail-closed semantics are unchanged (the public entry is closed only on process exit or explicit user stop).
+
+### ⚖️ Product differences vs. upstream
+
+- **GitHub identity binding is removed** by product decision: the upstream-optional GitHub Device Flow login no longer exists in this repository's settings page / pairing entry / RPC / configuration. Authentication now consists of: one-time pairing, the long-term pairing code, and per-device sessions.
+
+> This repository is accountable only for the additions above; issues with any upstream capability should be reported to the upstream repository first.
+
+---
+
+## 3. Quick start (from source)
+
+> This fork has not published an npm package or a formal Release yet — the path below is "build locally, then install".
+
+**Environment**: Node `^22.19 || >=24`, pnpm 11.
 
 ```bash
-dsh plugin --profile web add dsh-remote-web-gateway
+# 1) Repository root: install dependencies and build (the root build emits the gateway runtime dist)
+pnpm install
+pnpm run check        # typecheck + test + build
+
+# 2) plugin: install dependencies and build an installable artifact
+cd plugin
+pnpm install
+pnpm run build
+pnpm pack             # produces dsh-remote-web-gateway-0.2.2.tgz
 ```
 
-> 💻 Using **DSH Desktop (Windows GUI)**? The plugin CAN be installed into the Desktop
-> `desktop` profile, but only from an EXTERNAL terminal/script while Desktop is closed
-> (a running Desktop must not be mutated by a second process): run
-> `scripts\install-windows.ps1 -TarballPath <local-tgz>`, then restart DSH Desktop.
-> See [Windows/Desktop install notes](docs/WINDOWS_DESKTOP_INSTALL.md).
+**DSH Desktop (Windows GUI)**: fully quit Desktop first, then from an external terminal run
 
-### After installing:
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\install-windows.ps1 -TarballPath <path to plugin .tgz>
+```
 
-## **Restart DSH → Settings → Remote Control → Enable remote control → Scan with your phone**
+Restart DSH Desktop → Settings → Remote Control → enable → scan / type the code from your phone.
 
-**That's it.**
+**Headless `dsh web`**: `dsh plugin --profile web add <path to plugin .tgz>`, restart DSH Web, then the same path as above.
 
-### 📘 [**First time? Open the User Guide →**](docs/USER_GUIDE_EN.md)
-
-Install, pairing, a second device, revoking access, updates, and common issues — all covered step by step.
-
-### 🤖 [**Don't want to install it yourself? Let an AI do it →**](docs/USER_GUIDE_EN.md#ai-assisted-install)
-
-Send the project link and the ready-made prompt from the User Guide to DSH, Codex, Claude Code, or another coding agent.
-
-**An agent that can run your terminal can help install it directly; an agent that cannot touch your computer can still walk you through the official docs step by step.**
+> ⚠️ The npm package `dsh-remote-web-gateway` is the **original** published by upstream summer1238;
+> the changes in this repository are not published under that npm name — do not mix them up.
 
 ---
 
-# **DSH on your phone is not a "miniature Windows"**
-
-![DSH on your phone, not a miniature Windows](docs/assets/mobile-showcase-zh.png)
-Remote desktop solves this question:
-
-> How do I fit my whole computer into a phone screen?
-
-We solve this one:
-
-> ## **How do I keep using DSH after I leave the computer?**
-
-The Agent on your computer keeps working.
-
-From your phone you can:
-
-### **Check progress · Continue conversations · See results · Handle the actions that need your confirmation**
-
-What your phone shows is DSH.
-
-## **Not a Windows desktop that needs endless zooming and dragging.**
-
----
-
-# **You just want DSH on your phone — do you really need all that hassle?**
-
-### **To glance at your Agent, do you really need to remote into all of Windows?**
-
-No.
-
-## **Take only DSH to your phone.**
-
-### **To reach your computer from your phone, do you really need a VPS, SSH, and router port forwarding first?**
-
-Not by default.
-
-## **One click sets up a Cloudflare Quick Tunnel.**
-
-### **To use DSH from your phone, do you really need to redeploy an Agent?**
-
-No.
-
-## **Keep using the DSH, projects, and tools already running on your computer.**
-
-### **For convenience, should a long-lived token really travel around inside every link?**
-
-We chose a different way:
-
-## **One-time pairing + per-device authorization + revoke anytime.**
-
----
-
-# **Getting connected is only the first step. Security is the default design.**
-
-![Security model: a link is not permission](docs/assets/security-model-zh.png)
-
-Making DSH reachable from a phone is not that hard.
-
-**A reverse proxy plus a tunnel** can get a Web UI onto a phone quickly.
-
-What is actually hard:
-
-## **Who gets in?**
-
-## **What happens when a credential leaks?**
-
-## **Can an authorized device be un-authorized later?**
-
-Because behind DSH is not an ordinary web page.
-
-It can reach:
-
-**Your project source code, development files, local tools, and the model capabilities you have configured.**
-
-If this is a company development machine, an overly simple remote entry risks more than "someone sees a page".
-
-It can expose your development environment.
-
-Someone could even keep calling the model quota you already paid for.
-
-### **Waking up to a drained API quota is only one of the milder outcomes.**
-
-So we never treated:
-
-> "the phone can open it"
-
-as:
-
-> "remote access is done".
-
-The whole access flow looks more like:
+## 4. How it works (diagram)
 
 ```text
-Temporary connection
-    ↓
-One-time pairing
-    ↓
-Per-device authorization
-    ↓
-Continuous authentication
-    ↓
-Revoke anytime
-    ↓
-DeepSeek Harness
+Phone browser ── HTTPS ──▶ Cloudflare Quick Tunnel (established outbound by the computer)
+                                  │
+                                  ▼
+                    Loopback Remote Gateway on the PC
+                  (pairing / long code / device-session auth + transparent reverse proxy)
+                                  │  127.0.0.1
+                                  ▼
+                     The running DeepSeek Harness
+                 (projects, sessions, tools & agents stay on the PC)
 ```
 
-## **A link is not permission.**
-
-Having the address does not mean you have control of DSH.
-
-## **The pairing credential is not a long-lived password.**
-
-First pairing uses a one-time credential instead of a universal long-lived token riding along in every QR code and link.
-
-## **Every device is authorized independently.**
-
-Not every phone shares one long-lived master key.
-
-## **Authorization can be taken back.**
-
-A device no longer trustworthy?
-
-**Revoke it from the computer.**
-
-For the full security boundary — what we protect against and what we don't:
-
-For the full security boundary — what we protect, what we trust, and what we do not — see the "Security" section of the [User Guide](docs/USER_GUIDE_EN.md).
+The "transport layer (bring public traffic back to the PC)" vs. "authentication layer (who gets in)"
+decoupling comes from the upstream design. This repository does not rebuild those two layers; it layers the additions above on top.
 
 ---
 
-# **A reverse proxy could do it — why did we make it this complex?**
+## 5. Security & vulnerability reporting
 
-Because a minimal implementation mainly solves:
-
-> ## **How do I open this page from the outside?**
-
-We also wanted to solve:
-
-> ## **How do I make it actually suitable for long-term remote use?**
-
-So beyond the connection, we added:
-
-**One-time pairing · per-device Device Sessions · single / global revocation · HTTP / WebSocket authentication · a loopback-only management plane**
-
-We would rather make this slightly more complex.
-
-## **Than mistake "it opens" for "it is safe to trust".**
+- **A link is not permission**: having the public URL does not grant access to DSH — you still need a one-time pairing or the long code to obtain an independent device session.
+- The long code is a **long-lived strong credential**: the UI warns not to share screenshots; one click on "new code" invalidates it immediately.
+- Every device is authorized independently and can be revoked individually or all at once; management actions (start / stop / revoke / update) are loopback-only and unreachable from the public side.
+- To report a security vulnerability, use GitHub's **private reporting on the Security tab** (do not open a public issue).
 
 ---
 
-# **How does it actually connect?**
+## 6. License
 
-![Connection flow: phone → HTTPS → Cloudflare Quick Tunnel → gateway → DSH](docs/assets/architecture-zh.png)
-```text
-Phone browser
-     │
-     │ HTTPS
-     ▼
-Cloudflare Quick Tunnel
-     │
-     ▼
-DSH Remote Web Gateway
-     │
-     │ 127.0.0.1
-     ▼
-DeepSeek Harness
-```
-
-The computer establishes the Tunnel outbound.
-
-## **DeepSeek Harness and the Gateway still listen only on the local machine.**
-
-So by default you need no public IP, and no new inbound port on your router.
+[MIT License](LICENSE). Copyright of the upstream dsh-remote-web-gateway belongs to summer1238;
+the additional modifications in this repository belong to AercherC.
+Item-by-item attribution of adapted third-party components is in [plugin/NOTICE](plugin/NOTICE).
 
 ---
 
-# **The capabilities you will actually use**
+## 7. Acknowledgements
 
-### 📱 **Phone-tailored UI**
-Not a desktop UI squeezed onto a phone.
-
-### ⚡ **One-click Quick Tunnel**
-No VPS, SSH, or port forwarding by default.
-
-### 🔐 **One-time QR scan / 8-digit pairing code**
-First-time device access, simple and direct.
-
-### 📱 **Per-device authorization**
-Multiple devices each get their own access rights.
-
-### 🚫 **Revoke anytime**
-Take back access from a single device or from all devices, right from the computer.
-
-### 🌐 **Automatic network adaptation**
-Uses the system / environment proxy, and falls back to verified mirror paths when the official download is failing.
-
-### 🔄 **Update reminders**
-You are notified when a new version exists; you confirm the install, and your working DSH is never restarted behind your back.
-
----
-
-# 📚 **Documentation**
-
-### 📘 [**User Guide**](docs/USER_GUIDE_EN.md)
-**Start here if it's your first time.**
-
-It also includes copy-paste prompts for installing / troubleshooting with an AI.
-
-### 🧰 [**Troubleshooting**](docs/TROUBLESHOOTING.md)
-Common issues with the tunnel, downloads, pairing, network, and updates.
-
-### 🧰 [**Windows / DSH Desktop install**](docs/WINDOWS_DESKTOP_INSTALL.md)
-One-click install and rollback on DSH Desktop (Windows GUI).
-
-### 📋 [**CHANGELOG**](CHANGELOG.md)
-Version changes and update contents.
-
----
-
-# 🤖 **Stuck? Hand the project link to an AI**
-
-```text
-https://github.com/AercherC/dsh-remote
-```
-
-Send:
-
-### **The project link + your error message / screenshot**
-
-to DSH, Codex, Claude Code, or another AI.
-
-Tell it:
-
-> **First read this project's README, User Guide, and Troubleshooting, then help me debug according to the project's current docs.**
-
-### 🤖 [**Have an AI install / debug for you →**](docs/USER_GUIDE_EN.md#ai-assisted-install)
-
----
-
-# **Open source**
-
-This project will always stay **free and open source**.
-
-If it saved you a remote-desktop hassle, a VPS, or just let you keep using DSH comfortably after work —
-
-that is already worth it.
-
-If it helped you too, please leave a ⭐ on this project:
-
-### ⭐ [**Star dsh-remote →**](https://github.com/AercherC/dsh-remote)
-
-This project is licensed under the [MIT License](LICENSE).
-
-**DSH Remote Web Gateway (dsh-remote) is a community open-source project.**
-
----
-
-# ⭐ **If it actually got you away from your desk, please leave a Star**
-
-![Continue your work from your phone](docs/assets/continue-work.png)
-
-The Agent on your computer keeps running.
-
-You have already left the office.
-
-And you finish the task from your phone.
-
-## **That is what this project is for.**
-
-### ⭐ [**Please remember to Star DSH Remote Web Gateway so more DSH users can find it →**](https://github.com/AercherC/dsh-remote)
+Thanks to summer1238 for the upstream work, and to the authors of dsh-web-mobile, DeepSeek Harness, and the other MIT projects — without those public efforts, this repository would not exist.
