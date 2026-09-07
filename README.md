@@ -1,160 +1,212 @@
-<div align="right">
+# dsh-remote
 
-简体中文 · [English](README_EN.md)
+通过手机或平板浏览器，安全地远程使用电脑上正在运行的 **DeepSeek Harness（DSH）**。
 
-</div>
+`dsh-remote` 在电脑本机运行 Remote Gateway，并通过 Cloudflare Quick Tunnel 建立公网 HTTPS 入口。手机完成配对后，就可以继续访问 DSH Web UI、查看 Agent 执行状态、继续对话、处理确认操作和选择工作区。
 
-# dsh-remote — DSH Remote Web Gateway（增强版）
+项目、会话、工具、文件和 Agent 仍然运行在电脑端，移动设备只负责远程访问。
 
-**在手机 / 平板浏览器上，继续使用电脑上正在运行的 DeepSeek Harness（DSH）：**
-**看进度、继续对话、查看结果、处理需要确认的操作——项目和工具仍然留在电脑上。**
+## 主要功能
 
-本项目是开源项目
-[**summer1238/dsh-remote-web-gateway**](https://github.com/summer1238/dsh-remote-web-gateway)
-（作者 summer1238，MIT 协议）的**二次开发（fork）版本**。
-上游的成果归上游，本仓库只对自己的增量负责：**先声明上游，再讲我设计的东西。**
+### 📱 手机 / 平板远程访问
 
----
+- 直接使用浏览器连接 DSH，无需安装额外手机客户端。
+- 使用 Cloudflare Quick Tunnel 建立公网 HTTPS 连接。
+- 不需要公网 IP、端口转发或额外 VPS。
+- Remote Gateway 仅监听本机回环地址，公网请求必须先经过认证。
 
-## 一、上游项目声明
+### 🔐 一次性配对
 
-| | |
-|---|---|
-| 上游项目 | [dsh-remote-web-gateway](https://github.com/summer1238/dsh-remote-web-gateway)，作者 summer1238 |
-| 上游基线 | v0.2.2（main @ `5b2db96`，2026-08-28），MIT |
-| 本仓库 | 在该基线上二次开发；增补改动的版权归 AercherC（见 [LICENSE](LICENSE)） |
+- 开启远程控制后生成二维码和 8 位配对码。
+- 配对票据默认 5 分钟有效。
+- 支持扫码或手动输入配对码。
+- 配对成功后票据立即失效。
+- 可随时生成新的配对码，旧票据同时失效。
 
-**继承自上游、并非本仓库原创的核心能力**（上游成熟且经过真机验证，直接复用、不重复造轮子）：
+### 🔢 长期配对码
 
-- 一次性扫码 / 8 位配对码的安全配对（票据 5 分钟有效、单次原子认领）
-- 独立设备授权：每台设备独立 Device Session，可逐台或全部撤销（磁盘只存 SHA-256）
-- Cloudflare Quick Tunnel 一键公网传输：电脑主动出站建立，无需公网 IP、端口转发或 VPS
-- 认证层网关：仅回环监听的反向代理 + Host / Origin 改写，透明代理官方 DSH Web UI
-- 手机 UI 注入层（只对明确手机生效）与只读的远程工作区目录选择器
-- 更新提醒（用户确认才安装，不偷偷重启正在工作的 DSH）与下载源 / 代理网络自动回退
-- cloudflared 供应链校验：固定版本 + SHA-256 复验、Windows Authenticode 签名校验、损坏自动重下
+适合自己的常用手机或平板长期使用。
 
-此外，插件内还适配了其它 MIT 开源项目的片段（[dsh-web-mobile](https://github.com/mexiaosqwq/dsh-web-mobile)、
-[deepseek-harness](https://github.com/deepseek-ai/deepseek-harness)），逐条归因见
-[plugin/NOTICE](plugin/NOTICE)。
+- 与一次性配对并存，可在设置页中切换。
+- 支持二维码和手动输入。
+- 长期码在手动更换前持续有效，并可在 DSH 重启后继续使用。
+- 默认生成 9 位随机码。
+- 支持自定义 6–12 位字母 / 数字组合（`A-Z`、`0-9`）。
+- 可一键更换长期码，旧码和旧二维码立即失效。
+- 更换长期码只影响之后的新配对，不会自动断开已经授权的设备。
 
-> 想用原版？直接安装上游发布的 npm 包 `dsh-remote-web-gateway`，或访问上游仓库。
-> 本仓库是独立的 fork 增强版，**没有占用也没有替代上游的发布渠道**。
+### 💻 独立设备授权
 
----
+- 每台已配对设备拥有独立 Device Session。
+- 可以查看已授权设备。
+- 支持单独撤销某台设备。
+- 支持一次撤销全部设备。
+- 获取公网地址本身不代表拥有访问权限，设备仍需先完成配对。
 
-## 二、我的设计与功能增量
+### 🗂️ 远程工作区选择
 
-在继承上游架构（传输与认证解耦、配对 / 设备会话 / 管理面仅回环）的前提下，
-我按"先取证、再实现、自动化全绿 ≠ 真人验收"的纪律做自己的增量。
-以下功能均已写入本仓库代码，随版本维护：
+- 手机端可以浏览电脑目录并选择 DSH 工作区。
+- Windows 下支持浏览不同磁盘根目录。
+- 实际文件访问权限仍由本机操作系统权限控制。
 
-### 🪟 Windows / DSH Desktop 安装体验
+### 📡 Quick Tunnel 状态与自动恢复
 
-- [scripts/install-windows.ps1](scripts/install-windows.ps1)：把插件装进 **DSH Desktop 的 `desktop` profile** 的一键安装脚本——
-  ASCII 路径暂存、改依赖前自动快照、失败自动回滚、只走官方 `dsh plugin` 命令；
-  在 DSH Desktop 2.0.5 / core 0.1.2-rc.1 上实测"手机远程全流程"通过。
-- 配套的 Windows CI 质量门（[.github/workflows/ci.yml](.github/workflows/ci.yml)）：
-  每次 push / PR 在 Windows 上跑 typecheck + test + build + pack。
+- 显示下载、校验、启动、连接、就绪等状态。
+- 只有 Cloudflare Edge 真正确认连接后才显示可用远程地址和配对信息。
+- 持续监测 Tunnel Edge 连接状态。
+- 短暂网络抖动时保持当前公网地址和设备授权，并等待 `cloudflared` 自动恢复。
+- 可查看最近的失联 / 恢复事件和持续时间。
+- 如果 `cloudflared` 进程真正退出，则关闭当前公网入口并提示重新开启。
 
-### 🔢 长期配对码（与一次性配对并存，ToDesk 式）
+### 🌐 cloudflared 下载与网络适配
 
-- 设置页「手机连接」新增 **一次性配对 / 长期配对码** 两个 Tab；长期码同样支持扫码或输码连接。
-- 长期码**永久有效、手动重置**：默认不展示；远程控制开启后，进入「长期配对码」Tab 且当前无码时会自动生成一次随机码 + QR（不会自动轮换）；可一键「换一组新码」，旧码立即失效。
-- **自定义码**：6–12 位字母（A–Z）/ 数字（0–9），便于记忆；服务端二次校验格式。
-- **重启后原码仍可查看**：明文只存于"当前用户 + SYSTEM"ACL 保护目录（与设备凭据同一信任域）；
-  换组 / 设置自定义码即原子覆盖，不留旧明文历史。
-- 语义明确：换组 / 自定义只影响**未来的新配对**，已连接设备不受影响（强制下线请用「撤销全部设备」）。
-- 安全：与一次性配对**共享同一 claim 限速预算**；凭据比较使用 timing-safe 比较；
-  长期码只走 `/pair#<secret>` 深链或输码，不接收 query 明文。
-- 实现位置：root 库层 `src/pairing-long.ts` 与 `src/pairing-routes.ts` 的 claim 回退；
-  plugin 侧 runtime / rpc / wire 接口与设置页「手机连接」卡 UI（zh / en 文案）。
+项目可以自动准备 Quick Tunnel 所需的 `cloudflared`：
 
-### 📡 Quick Tunnel 断连诊断与恢复体验
+- 检查本机已有 `cloudflared` 是否可信、可用。
+- 使用固定版本和 SHA-256 校验下载文件。
+- Windows 下额外检查 Authenticode 签名。
+- 缓存文件损坏时自动重新下载。
+- 显示下载大小、速度、来源和当前网络路径。
+- 支持官方源和备用镜像。
+- 支持自动、直连、自定义代理三种下载网络模式。
 
-- `src/quick-tunnel.ts` 在隧道就绪后**持续监听边缘连接**，记录失联 / 回归事件与时长（edgeState、degraded 起止、事件时间线）。
-- 瞬时失联 → 设置页显示「**短暂失联 · 自动恢复中**」，公网地址与已授权设备不变、**无需重新扫码**；
-  只有进程退出（换 URL）才显示明确的错误与一键「重新开启」。
-- 诊断区展示最近边缘事件时间线；fail-closed 语义保持不变（仅进程退出 / 用户停止才关闭公网入口）。
+### 🔄 更新管理
 
-### ⚖️ 与上游的产品差异
+- 设置页提供版本检查和更新状态。
+- 更新通过 DSH 官方 `dsh plugin` 命令执行。
+- 安装完成后重新校验实际安装版本。
+- 不会自动重启正在工作的 DSH，更新完成后由用户手动重启生效。
 
-- 按产品决策**移除了 GitHub 身份绑定**：上游可选配的 GitHub Device Flow 登录，在本仓库的设置页 / 配对入口 /
-  RPC / 配置中均不再出现。认证只保留：一次性配对、长期配对码、独立设备会话。
+### 🪟 DSH Desktop 安装
 
-> 本仓库只对以上增量负责；任何上游能力的问题请先到上游仓库反馈。
-
----
-
-## 三、快速开始（源码形态）
-
-> 本 fork 尚未发布 npm 包或正式 Release，以下路径为"本地构建 + 安装"。
-
-**环境**：Node `^22.19 || >=24`，pnpm 11。
-
-```bash
-# 1) 仓库根：装依赖并构建（root build 会产出 gateway 运行时 dist）
-pnpm install
-pnpm run check        # typecheck + test + build
-
-# 2) plugin：装依赖并构建出可安装的插件产物
-cd plugin
-pnpm install
-pnpm run build
-pnpm pack             # 生成 dsh-remote-web-gateway-0.2.2.tgz
-```
-
-**DSH Desktop（Windows GUI）**：先完全退出 Desktop，再在外部终端执行
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\install-windows.ps1 -TarballPath <plugin 的 .tgz 路径>
-```
-
-重启 DSH Desktop → 设置 → 远程控制 → 开启 → 手机扫码 / 输码。
-
-**无 GUI 的 `dsh web`**：`dsh plugin --profile web add <plugin 的 .tgz 路径>`，重启 DSH Web 后路径同上。
-
-> ⚠️ npm 上的 `dsh-remote-web-gateway` 是上游 summer1238 发布的**原版**；
-> 本仓库的改动没有发布到那个 npm 名，安装时请勿混淆。
+- 支持直接在 DSH Desktop 中让 DSH 协助完成插件安装。
+- 不需要退出 Desktop，也不需要另外打开终端手动执行安装脚本。
+- 只需在 DSH 对话中发送安装请求并附上本仓库地址，即可让 DSH 完成安装流程。
+- 安装完成后可直接进入 **设置 → 远程控制** 开启远程访问。
 
 ---
 
-## 四、它怎么工作（简图）
+## 工作原理
 
 ```text
-手机浏览器 ── HTTPS ──▶ Cloudflare Quick Tunnel（由电脑主动出站建立）
-                              │
-                              ▼
-                  本机回环 Remote Gateway
-                  （配对 / 长期码 / 设备会话认证 + 透明反向代理）
-                              │  127.0.0.1
-                              ▼
-                  正在运行的 DeepSeek Harness
-                  （项目、会话、工具、Agent 全部留在电脑上）
+手机 / 平板浏览器
+        │
+        │ HTTPS
+        ▼
+Cloudflare Quick Tunnel
+        │
+        ▼
+Remote Gateway（127.0.0.1）
+        │
+        ├─ 一次性配对
+        ├─ 长期配对码
+        ├─ Device Session
+        └─ 请求认证 / 反向代理
+        │
+        ▼
+DeepSeek Harness
+
+项目 / 会话 / Agent / 工具 / 文件仍保留在电脑端
 ```
 
-"传输层（把公网流量送回本机）"与"认证层（谁能进）"解耦的架构设计来自上游；
-本仓库不重做这两层，只在其上叠加上述增量。
+Quick Tunnel 负责把公网 HTTPS 流量送回电脑，Remote Gateway 负责认证访问者并把通过认证的请求代理到本机 DSH。
+
+`cloudflared` 的目标始终是 Remote Gateway，而不是直接暴露 DSH，因此公网请求不能绕过配对和设备会话认证直接进入 DSH。
 
 ---
 
-## 五、安全与漏洞上报
+## 快速开始
 
-- **链接 ≠ 权限**：拿到公网地址不等于能进入 DSH；进入需要一次性配对或长期码换取独立的设备会话。
-- 长期码是**长期有效的强凭据**：界面已提示勿分享截图；可随时「换一组」使其立即失效。
-- 每台设备独立授权、可逐台或全部撤销；管理操作（开启 / 停止 / 撤销 / 更新）仅限本机回环，公网不可达。
-- 发现安全漏洞请走 GitHub **Security 页的私有上报**（不要开公开 Issue）。
+`dsh-remote` 以 DSH 插件形式使用。安装完成后，在 DSH 中进入：
+
+```text
+设置 → 远程控制
+```
+
+开启远程控制，等待 Quick Tunnel 就绪后，即可使用手机或平板扫码 / 输入配对码连接。
+
+### DSH Web
+
+使用 `dsh web` 时，可以直接将插件安装到 `web` profile：
+
+```bash
+dsh plugin --profile web add "github:AercherC/dsh-remote#main&path:/plugin"
+```
+
+安装完成后重启 `dsh web`，然后进入：
+
+```text
+设置 → 远程控制
+```
+
+开启远程控制即可。
+
+### DSH Desktop
+
+此插件支持直接让 DSH 协助安装，不需要退出 Desktop，也不需要另外打开终端。
+
+在 DSH Desktop 的对话中直接发送：
+
+```text
+帮我安装这个 DSH 插件：
+https://github.com/AercherC/dsh-remote
+```
+
+DSH 会根据仓库中的插件配置完成安装。安装完成后进入：
+
+```text
+设置 → 远程控制
+```
+
+开启远程控制，然后使用手机扫码或输入配对码即可连接。
 
 ---
 
-## 六、开源协议
+## 使用方式
 
-[MIT License](LICENSE)。上游 dsh-remote-web-gateway 的版权归 summer1238；
-本仓库的增补改动版权归 AercherC。第三方适配组件的逐条归因见 [plugin/NOTICE](plugin/NOTICE)。
+### 一次性连接
+
+1. 在电脑端打开 DSH 的“远程控制”。
+2. 开启远程控制并等待 Tunnel 就绪。
+3. 使用手机扫描二维码，或手动输入 8 位配对码。
+4. 配对成功后进入 DSH Web UI。
+5. 之后该设备通过自己的 Device Session 继续访问。
+
+### 长期连接
+
+1. 在“远程控制”中切换到“长期配对码”。
+2. 生成长期码和二维码。
+3. 使用常用手机扫码或输入长期码。
+4. 如需废止该凭据，点击“换一组新码”或设置新的自定义码。
+
+### 撤销设备
+
+不再使用某台设备时，可以在电脑端设备列表中单独撤销；需要让所有已授权设备立即失效时，可以使用“撤销全部设备”。
 
 ---
 
-## 七、致谢
+## 安全设计
 
-感谢 summer1238 的开源工作，以及 dsh-web-mobile、DeepSeek Harness 等 MIT 项目的作者——
-没有这些公开成果，就不会有本仓库。
+- Remote Gateway 仅监听 `127.0.0.1`。
+- `cloudflared` 只主动建立出站连接，不要求本机开放公网端口。
+- 公网 URL 只是传输入口，不是访问凭据。
+- 一次性票据有有效期，并在成功使用后立即失效。
+- 长期配对码在用户主动更换前持续有效。
+- 每台设备拥有独立会话，可以单独撤销。
+- 开启 / 停止远程访问、设备撤销、网络设置等管理操作只通过本机管理通道执行。
+- 配对 claim 使用限速保护，凭据比较使用 timing-safe 方式处理。
+- 二维码中的敏感配对 secret 放在 URL Fragment 中，不通过 query 参数传输。
+- Tunnel 进程退出时会立即清除当前公网入口。
+- 自动下载的 `cloudflared` 使用固定版本和 SHA-256 校验；Windows 下额外验证 Authenticode 签名。
+
+为了支持重启后继续显示长期配对码和二维码，长期凭据会保存在插件状态目录中。Windows 下该目录限制为当前用户和 `SYSTEM` 可访问；更换长期码时使用原子覆盖，不保留旧码历史。
+
+长期码属于长期有效凭据，请不要分享包含长期二维码或配对码的截图。
+
+---
+
+## License
+
+MIT License。详见 [LICENSE](./LICENSE)。
+
+第三方组件及相关许可信息见 [plugin/NOTICE](./plugin/NOTICE)。
