@@ -16,21 +16,7 @@
     "isolatedModules": true,
     "resolveJsonModule": true,
     "noEmit": true,
-    "types": ["node"],
-    "paths": {
-      "react-dom": ["D:/dev/deepseek-harness/node_modules/.pnpm/@types+react-dom@18.3.7_@types+react@18.3.31/node_modules/@types/react-dom/index.d.ts"],
-      "@deepseek-ai/cordis": ["D:/dev/deepseek-harness/vendor/cordis/lib/types/index.d.ts"],
-      "@deepseek-ai/dsh-client-connection": ["D:/dev/deepseek-harness/packages/client/connection/lib/types/index.d.ts"],
-      "@deepseek-ai/dsh-client-connection/client": ["D:/dev/deepseek-harness/packages/client/connection/lib/types/client/index.d.ts"],
-      "@deepseek-ai/dsh-client-ui-slots": ["D:/dev/deepseek-harness/packages/client/ui-slots/lib/types/index.d.ts"],
-      "@deepseek-ai/dsh-client-ui-renderer/client": ["D:/dev/deepseek-harness/packages/client/ui-renderer/lib/types/client/index.d.ts"],
-      "@deepseek-ai/dsh-client-ui-primitives": ["D:/dev/deepseek-harness/packages/client/ui-primitives/lib/types/index.d.ts"],
-      "@deepseek-ai/dsh-client-locale/client": ["D:/dev/deepseek-harness/packages/client/locale/lib/types/client/index.d.ts"],
-      "@deepseek-ai/dsh-client-ui-layout/client": ["D:/dev/deepseek-harness/packages/client/ui-layout/lib/types/client/index.d.ts"],
-      "@deepseek-ai/dsh-client-ui-settings/client": ["D:/dev/deepseek-harness/packages/client/ui-settings/lib/types/client/index.d.ts"],
-      "@deepseek-ai/dsh-client-ui-workspace/client": ["D:/dev/deepseek-harness/packages/client/ui-workspace/lib/types/client/index.d.ts"],
-      "@deepseek-ai/dsh-host-webserver": ["D:/dev/deepseek-harness/packages/host/webserver/lib/types/index.d.ts"]
-    }
+    "types": ["node"]
   },
-  "include": ["src/index.ts", "src/config.ts", "src/home.ts", "src/acl.ts", "src/runtime.ts", "src/rpc.ts", "src/ua.ts", "src/wire.ts", "src/semver.ts", "src/updater.ts", "src/github.ts"]
+  "include": ["src/index.ts", "src/config.ts", "src/home.ts", "src/acl.ts", "src/runtime.ts", "src/rpc.ts", "src/ua.ts", "src/wire.ts", "src/semver.ts", "src/updater.ts"]
 }

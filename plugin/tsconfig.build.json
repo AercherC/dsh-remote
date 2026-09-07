@@ -9,5 +9,5 @@
     // NO source maps in the published package: they embed local machine paths.
     "sourceMap": false
   },
-  "include": ["src/index.ts", "src/config.ts", "src/home.ts", "src/acl.ts", "src/runtime.ts", "src/rpc.ts", "src/ua.ts", "src/wire.ts", "src/semver.ts", "src/updater.ts", "src/github.ts"]
+  "include": ["src/index.ts", "src/config.ts", "src/home.ts", "src/acl.ts", "src/runtime.ts", "src/rpc.ts", "src/ua.ts", "src/wire.ts", "src/semver.ts", "src/updater.ts"]
 }
