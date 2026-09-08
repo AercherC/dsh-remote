@@ -1,16 +1,31 @@
-# dsh-remote
+<div align="center">
+
+# DSH Remote
+
+### [下载 Android 版，随时连接你的 DSH](https://peaceful-fare-scan-camcorders.trycloudflare.com/DSHRemote.apk)
+
+[Android 下载页](https://peaceful-fare-scan-camcorders.trycloudflare.com/) · [English](./README_EN.md)
+
+</div>
 
 通过手机或平板浏览器，安全地远程使用电脑上正在运行的 **DeepSeek Harness（DSH）**。
 
-`dsh-remote` 在电脑本机运行 Remote Gateway，并通过 Cloudflare Quick Tunnel 建立公网 HTTPS 入口。手机完成配对后，就可以继续访问 DSH Web UI、查看 Agent 执行状态、继续对话、处理确认操作和选择工作区。
+`dsh-remote` 在电脑本机运行 Remote Gateway，并通过 Cloudflare Quick Tunnel 建立公网 HTTPS 入口。手机完成配对后，就可以通过浏览器或 Android App 继续访问 DSH Web UI、查看 Agent 执行状态、继续对话、处理确认操作和选择工作区。
 
 项目、会话、工具、文件和 Agent 仍然运行在电脑端，移动设备只负责远程访问。
 
 ## 主要功能
 
+### 🤖 Android App
+
+- [直接下载 DSH Remote APK](https://peaceful-fare-scan-camcorders.trycloudflare.com/DSHRemote.apk)（Android 8.0+）。
+- 打开 App 扫描电脑端二维码，即可在独立 WebView 中连接 DSH。
+- App 与浏览器使用同一套配对、Device Session 和网关安全边界。
+- 可在 [Android 下载页](https://peaceful-fare-scan-camcorders.trycloudflare.com/) 查看完整下载界面。
+
 ### 📱 手机 / 平板远程访问
 
-- 直接使用浏览器连接 DSH，无需安装额外手机客户端。
+- 可直接使用浏览器，也可安装 DSH Remote Android App。
 - 使用 Cloudflare Quick Tunnel 建立公网 HTTPS 连接。
 - 不需要公网 IP、端口转发或额外 VPS。
 - Remote Gateway 仅监听本机回环地址，公网请求必须先经过认证。

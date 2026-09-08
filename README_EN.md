@@ -1,4 +1,12 @@
-# dsh-remote
+<div align="center">
+
+# DSH Remote
+
+### [Download for Android and take DSH with you](https://peaceful-fare-scan-camcorders.trycloudflare.com/DSHRemote.apk)
+
+[Android download page](https://peaceful-fare-scan-camcorders.trycloudflare.com/) · [中文](./README.md)
+
+</div>
 
 Securely use the **DeepSeek Harness (DSH)** running on your computer from a phone or tablet browser.
 
@@ -8,9 +16,16 @@ Projects, sessions, tools, files, and Agents still run on the computer — the m
 
 ## Features
 
+### 🤖 Android app
+
+- [Download the DSH Remote APK](https://peaceful-fare-scan-camcorders.trycloudflare.com/DSHRemote.apk) (Android 8.0+).
+- Scan the QR code shown on the computer to connect from the app's dedicated WebView.
+- The app and browser share the same pairing flow, Device Sessions, and gateway security boundary.
+- Visit the [Android download page](https://peaceful-fare-scan-camcorders.trycloudflare.com/) for the full download experience.
+
 ### 📱 Phone / tablet remote access
 
-- Connect to DSH straight from a browser — no extra mobile client to install.
+- Connect from either a mobile browser or the DSH Remote Android app.
 - Public HTTPS connection via Cloudflare Quick Tunnel.
 - No public IP, port forwarding, or extra VPS required.
 - The Remote Gateway listens on the loopback address only, and public requests must be authenticated first.
