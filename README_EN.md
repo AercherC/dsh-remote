@@ -2,7 +2,7 @@
 
 # DSH Remote
 
-### [Download for Android and take DSH with you](https://peaceful-fare-scan-camcorders.trycloudflare.com/DSHRemote.apk)
+### [Open the Android download page](https://peaceful-fare-scan-camcorders.trycloudflare.com/)
 
 [Android download page](https://peaceful-fare-scan-camcorders.trycloudflare.com/) · [中文](./README.md)
 
@@ -18,10 +18,9 @@ Projects, sessions, tools, files, and Agents still run on the computer — the m
 
 ### 🤖 Android app
 
-- [Download the DSH Remote APK](https://peaceful-fare-scan-camcorders.trycloudflare.com/DSHRemote.apk) (Android 8.0+).
+- [Open the Android download page](https://peaceful-fare-scan-camcorders.trycloudflare.com/) to review the version and installation requirements before downloading (Android 8.0+).
 - Scan the QR code shown on the computer to connect from the app's dedicated WebView.
 - The app and browser share the same pairing flow, Device Sessions, and gateway security boundary.
-- Visit the [Android download page](https://peaceful-fare-scan-camcorders.trycloudflare.com/) for the full download experience.
 
 ### 📱 Phone / tablet remote access
 
