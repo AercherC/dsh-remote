@@ -2,9 +2,9 @@
 
 # DSH Remote
 
-### [Open the Android download page](https://peaceful-fare-scan-camcorders.trycloudflare.com/)
+### [Open the Android download page](https://aercherc.github.io/dsh-remote/android/)
 
-[Android download page](https://peaceful-fare-scan-camcorders.trycloudflare.com/) · [中文](./README.md)
+[Android download page](https://aercherc.github.io/dsh-remote/android/) · [中文](./README.md)
 
 </div>
 
@@ -18,7 +18,7 @@ Projects, sessions, tools, files, and Agents still run on the computer — the m
 
 ### 🤖 Android app
 
-- [Open the Android download page](https://peaceful-fare-scan-camcorders.trycloudflare.com/) to review the version and installation requirements before downloading (Android 8.0+).
+- [Open the Android download page](https://aercherc.github.io/dsh-remote/android/) to review the version and installation requirements before downloading (Android 8.0+).
 - Scan the QR code shown on the computer to connect from the app's dedicated WebView.
 - The app and browser share the same pairing flow, Device Sessions, and gateway security boundary.
 

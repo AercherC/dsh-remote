@@ -322,7 +322,7 @@
 </head>
 <body>
   <header class="shell topbar">
-    <a class="brand" href="/" aria-label="DSH Remote Android 下载页">
+    <a class="brand" href="./" aria-label="DSH Remote Android 下载页">
       <span class="brand-mark" aria-hidden="true">
         <svg viewBox="0 0 50 50" fill="white">
           <!-- 与 Android App 共用的小鲸鱼轮廓，保持下载页与安装后图标一致。 -->
@@ -339,11 +339,11 @@
 
   <main class="shell">
     <section aria-labelledby="hero-title">
-      <p class="eyebrow" id="release-label" aria-live="polite">Android app · 最新版本</p>
+      <p class="eyebrow">Android app · v1.1.1</p>
       <h1 id="hero-title">DSH Remote</h1>
       <p class="lead">在 Android 手机上继续电脑端的 DSH。扫码完成设备配对，通过加密隧道查看任务、跟进 Agent，并在需要时继续操作。</p>
       <div class="actions">
-        <a class="download-button" href="/DSHRemote.apk" download="DSHRemote.apk">
+        <a class="download-button" href="https://github.com/AercherC/dsh-remote/releases/latest/download/DSHRemote.apk">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
           下载 Android APK
         </a>
@@ -394,14 +394,5 @@
     <span>DSH Remote 是独立社区项目，并非 DeepSeek 官方产品。</span>
     <span><a href="https://github.com/AercherC/dsh-remote/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT License</a> · <a href="https://github.com/AercherC/dsh-remote" target="_blank" rel="noreferrer">Source</a></span>
   </footer>
-  <script>
-    // 版本信息以分发目录的 release.json 为准，避免页面和实际 APK 标识不一致。
-    fetch('/release.json', { cache: 'no-store' })
-      .then(function (response) { return response.ok ? response.json() : Promise.reject(); })
-      .then(function (release) {
-        if (release.versionName) document.getElementById('release-label').textContent = 'Android app · v' + release.versionName;
-      })
-      .catch(function () {});
-  </script>
 </body>
 </html>

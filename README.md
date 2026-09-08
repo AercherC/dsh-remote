@@ -2,9 +2,9 @@
 
 # DSH Remote
 
-### [前往 Android 下载页](https://peaceful-fare-scan-camcorders.trycloudflare.com/)
+### [前往 Android 下载页](https://aercherc.github.io/dsh-remote/android/)
 
-[Android 下载页](https://peaceful-fare-scan-camcorders.trycloudflare.com/) · [English](./README_EN.md)
+[Android 下载页](https://aercherc.github.io/dsh-remote/android/) · [English](./README_EN.md)
 
 </div>
 
@@ -18,7 +18,7 @@
 
 ### 🤖 Android App
 
-- [前往 Android 下载页](https://peaceful-fare-scan-camcorders.trycloudflare.com/)，查看版本与安装要求后下载（Android 8.0+）。
+- [前往 Android 下载页](https://aercherc.github.io/dsh-remote/android/)，查看版本与安装要求后下载（Android 8.0+）。
 - 打开 App 扫描电脑端二维码，即可在独立 WebView 中连接 DSH。
 - App 与浏览器使用同一套配对、Device Session 和网关安全边界。
 
