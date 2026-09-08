@@ -40,7 +40,7 @@
 
 .EXAMPLE
   powershell -ExecutionPolicy Bypass -File scripts\install-windows.ps1 `
-      -TarballPath D:\out\dsh-remote-web-gateway-0.2.2.tgz
+      -TarballPath D:\out\dsh-remote-web-gateway-0.2.3.tgz
 
 .EXAMPLE
   powershell -ExecutionPolicy Bypass -File scripts\install-windows.ps1 `

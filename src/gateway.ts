@@ -12,6 +12,9 @@ import { enforceHttpRequestPolicy, enforceWebSocketRequestPolicy, PublicOriginUn
 import type { PairingRoutes } from './pairing-routes.js'
 import type { PublicOriginProvider } from './public-origin.js'
 import { staticPublicOrigin } from './public-origin.js'
+import { injectLegacyWebViewPolyfill } from './web-compat.js'
+
+const MAX_HTML_BYTES = 8 * 1024 * 1024
 
 export interface GatewayDependencies {
   readonly authenticator: Authenticator
@@ -152,9 +155,13 @@ export async function startGateway(config: GatewayConfig, dependencies: GatewayD
     prependPath: false,
     ignorePath: false,
   })
+  /** 仅 HTML 导航需要缓冲改写；API、下载、SSE 与 WS 仍走原来的透明流式代理。 */
+  const htmlRequests = new WeakSet<IncomingMessage>()
   proxy.on('error', () => {})
   proxy.on('proxyReq', (proxyRequest: ClientRequest, request: IncomingMessage) => {
     normalizeUpstreamHeaders(proxyRequest, request, config.upstream)
+    // HTML 改写只处理 identity 编码，避免在网关里引入压缩解码分支。
+    if (htmlRequests.has(request)) proxyRequest.removeHeader('accept-encoding')
   })
   proxy.on('proxyReqWs', (proxyRequest: ClientRequest, request: IncomingMessage) => {
     normalizeUpstreamHeaders(proxyRequest, request, config.upstream)
@@ -171,6 +178,38 @@ export async function startGateway(config: GatewayConfig, dependencies: GatewayD
         else dependencies.logger.info(fields)
       }
     }
+  })
+  proxy.on('proxyRes', (proxyResponse: IncomingMessage, request: IncomingMessage, response: ServerResponse) => {
+    if (!htmlRequests.has(request)) return
+    const chunks: Buffer[] = []
+    let size = 0
+    proxyResponse.on('data', (chunk: Buffer | string) => {
+      const data = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
+      size += data.length
+      if (size <= MAX_HTML_BYTES) chunks.push(data)
+    })
+    proxyResponse.once('end', () => {
+      if (response.headersSent) return
+      if (size > MAX_HTML_BYTES) {
+        dependencies.logger.warn({ event: 'html_compat_too_large', method: request.method, path: safePath(request.url), status: 502 })
+        writeHttpError(response, 502)
+        return
+      }
+      const status = proxyResponse.statusCode ?? 502
+      const contentType = typeof proxyResponse.headers['content-type'] === 'string'
+        ? proxyResponse.headers['content-type'].toLowerCase()
+        : ''
+      const original = Buffer.concat(chunks)
+      const body = status >= 200 && status < 300 && contentType.includes('text/html')
+        ? Buffer.from(injectLegacyWebViewPolyfill(original.toString('utf8')))
+        : original
+      const headers = { ...proxyResponse.headers }
+      delete headers['transfer-encoding']
+      delete headers['content-encoding']
+      headers['content-length'] = String(body.length)
+      response.writeHead(status, proxyResponse.statusMessage, headers)
+      response.end(request.method === 'HEAD' ? undefined : body)
+    })
   })
 
   const sockets = new Set<Socket>()
@@ -216,7 +255,10 @@ export async function startGateway(config: GatewayConfig, dependencies: GatewayD
         return
       }
       dependencies.logger.info({ event: 'http_proxy', method: request.method, path: requestPath })
-      proxy.web(request, response, {}, () => {
+      const accept = typeof request.headers.accept === 'string' ? request.headers.accept : ''
+      const rewriteHtml = request.method === 'GET' && accept.includes('text/html')
+      if (rewriteHtml) htmlRequests.add(request)
+      proxy.web(request, response, rewriteHtml ? { selfHandleResponse: true } : {}, () => {
         dependencies.logger.warn({ event: 'http_upstream_error', method: request.method, path: requestPath, status: 502 })
         writeHttpError(response, 502)
       })

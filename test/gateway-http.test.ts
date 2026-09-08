@@ -94,6 +94,36 @@ describe('HTTP gateway', () => {
     expect(JSON.stringify(logs)).not.toContain('edge-secret')
   })
 
+  it('injects old-WebView polyfills before DSH page modules without changing asset streaming', async () => {
+    let upstreamAcceptEncoding: string | undefined
+    const upstream = createServer((incoming, response) => {
+      upstreamAcceptEncoding = typeof incoming.headers['accept-encoding'] === 'string'
+        ? incoming.headers['accept-encoding']
+        : undefined
+      response.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'content-encoding': 'identity' })
+      response.end('<!doctype html><html><head><script type="module" src="/app.js"></script></head></html>')
+    })
+    upstreams.push(upstream)
+    const gateway = await startGateway(testConfig(await listen(upstream)), {
+      authenticator: acceptingAuthenticator,
+      logger: capturedLogs().logger,
+    })
+    gateways.push(gateway)
+
+    const result = await request((gateway.server.address() as AddressInfo).port, {
+      path: '/',
+      headers: { ...AUTH_HEADERS, accept: 'text/html', 'accept-encoding': 'gzip' },
+    })
+    const html = result.body.toString()
+    expect(result.status).toBe(200)
+    expect(upstreamAcceptEncoding).toBeUndefined()
+    expect(result.headers['content-encoding']).toBeUndefined()
+    expect(Number(result.headers['content-length'])).toBe(result.body.length)
+    expect(html).toContain("define(Promise,'withResolvers'")
+    expect(html).toContain("define(AbortSignal,'any'")
+    expect(html.indexOf('data-dsh-legacy-webview-polyfill')).toBeLessThan(html.indexOf('/app.js'))
+  })
+
   it('streams a large API body and normalizes Origin for the DSH loopback fence', async () => {
     const body = Buffer.alloc(2 * 1024 * 1024, 0x61)
     let received = 0
