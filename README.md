@@ -20,8 +20,16 @@
 
 ```text
 帮我安装这个 DSH 插件：
-https://github.com/AercherC/dsh-remote/releases/download/v0.2.4/dsh-remote-web-gateway-0.2.4.tgz
+https://github.com/AercherC/dsh-remote/releases/download/v0.3.0/dsh-remote-phone-0.3.0.tgz
 ```
+
+也可以走插件界面：**插件 → 添加插件 → 安装第三方插件**，填入：
+
+```text
+dsh-remote-phone
+```
+
+> 从旧版（`dsh-remote-web-gateway`）升级：包名已变更，请先卸载旧插件再装本版，否则两者会并存。
 
 安装完成后，**完全退出并重新打开 DSH**（本次涉及 Host 侧代码，仅刷新页面不够），然后进入：
 
