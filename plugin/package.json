@@ -1,12 +1,13 @@
 {
   "name": "dsh-remote-web-gateway",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "DSH Remote Web Gateway — DSH native plugin: one-click phone/tablet remote access to the DeepSeek Harness Web GUI via Cloudflare Quick Tunnel + QR/pairing-code pairing + device management",
   "type": "module",
   "license": "MIT",
   "packageManager": "pnpm@11.19.0",
   "engines": {
-    "node": "^22.19.0 || >=24.0.0"
+    "node": "^22.19.0 || >=24.0.0",
+    "dsh": ">=0.2.1-rc.2"
   },
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

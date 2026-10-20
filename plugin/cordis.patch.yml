@@ -5,6 +5,9 @@
 # The plugin row carries NO user-visible configuration: every setting has a
 # safe default (OS-assigned loopback ports, 30-day sessions, 5-minute tickets)
 # and can be overridden in the profile's own cordis.patch.yml by id.
+#
+# `name` may be the bare package name or a GitHub subdirectory spec; both
+# resolve to this same profile dependency once installed.
 - insert:
     - id: dsh-remote-web-gateway
       name: dsh-remote-web-gateway

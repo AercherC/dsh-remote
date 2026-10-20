@@ -1,0 +1,60 @@
+{
+  "name": "dsh-remote-web-gateway",
+  "version": "0.2.3",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./gateway": {
+      "types": "./dist/gateway.d.ts",
+      "default": "./dist/gateway.js"
+    },
+    "./auth": {
+      "types": "./dist/auth.d.ts",
+      "default": "./dist/auth.js"
+    },
+    "./config": {
+      "types": "./dist/config.d.ts",
+      "default": "./dist/config.js"
+    },
+    "./pairing": {
+      "types": "./dist/pairing.d.ts",
+      "default": "./dist/pairing.js"
+    },
+    "./pairing-routes": {
+      "types": "./dist/pairing-routes.d.ts",
+      "default": "./dist/pairing-routes.js"
+    },
+    "./device-session": {
+      "types": "./dist/device-session.d.ts",
+      "default": "./dist/device-session.js"
+    },
+    "./public-origin": {
+      "types": "./dist/public-origin.d.ts",
+      "default": "./dist/public-origin.js"
+    },
+    "./quick-tunnel": {
+      "types": "./dist/quick-tunnel.d.ts",
+      "default": "./dist/quick-tunnel.js"
+    },
+    "./cloudflared-assets": {
+      "types": "./dist/cloudflared-assets.d.ts",
+      "default": "./dist/cloudflared-assets.js"
+    },
+    "./logger": {
+      "types": "./dist/logger.d.ts",
+      "default": "./dist/logger.js"
+    },
+    "./headers": {
+      "types": "./dist/headers.d.ts",
+      "default": "./dist/headers.js"
+    },
+    "./package.json": "./package.json"
+  }
+}

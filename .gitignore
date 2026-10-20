@@ -1,9 +1,10 @@
 node_modules/
 .idea/
 .pnpm-store/
-dist/
-plugin/lib/
-plugin/vendor/
+# Build output of the repo root only. Do NOT ignore `dist/` at every depth:
+# plugin/vendor/<core>/dist/ is the vendored runtime the plugin imports at load
+# time (see plugin/lib/runtime.js), so it must stay tracked for git installs.
+/dist/
 *.tgz
 coverage/
 .env
