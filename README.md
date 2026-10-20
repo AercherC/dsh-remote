@@ -14,6 +14,27 @@
 
 项目、会话、工具、文件和 Agent 仍然运行在电脑端，移动设备只负责远程访问。
 
+## 一键安装
+
+把下面整段**复制给 DSH 的对话**，让它替你装好（无需 clone、无需 pnpm、无需自己构建）：
+
+```text
+帮我安装这个 DSH 插件：
+https://github.com/AercherC/dsh-remote/releases/download/v0.2.4/dsh-remote-web-gateway-0.2.4.tgz
+```
+
+安装完成后，**完全退出并重新打开 DSH**（本次涉及 Host 侧代码，仅刷新页面不够），然后进入：
+
+```text
+设置 → 远程控制
+```
+
+开启远程控制，等待 Quick Tunnel 建立后，即可用手机扫码或输入配对码连接。
+
+> 也可以走插件界面：**插件 → 添加插件 → 安装第三方插件**，填入上面的 `.tgz` 直链即可。
+>
+> ⚠️ 请**不要**在插件界面只输入包名 `dsh-remote-web-gateway` 或 `dsh-remote` —— 这两个名字在 npm 上属于其他项目，会装错东西。本插件目前只通过上面的 Release 直链分发。
+
 ## 主要功能
 
 ### 🤖 Android App
