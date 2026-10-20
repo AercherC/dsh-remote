@@ -1,5 +1,5 @@
 window.__ModuleLoader__.load({
-	id: "dsh-remote-web-gateway",
+	id: "dsh-remote-phone",
 	factory: (require) => {
 		var module = { exports: {} };
 		var exports = module.exports;
@@ -4895,10 +4895,15 @@ window.__ModuleLoader__.load({
     display: none !important;
   }
 
-  /* --- Floating open button + backdrop (rendered by the overlay) --- */
+  /* --- Floating open button + backdrop (rendered by the overlay) ---
+     Bottom-LEFT on purpose: DSH's own narrow-viewport sidebar toggle sits in
+     the bottom-right corner, and a bottom-right plugin button covered it
+     (users tapping that corner hit the plugin FAB instead of the native
+     control). The right edge is left to the shell. */
   [data-dsh-remote-mobile="fab"] {
     position: fixed !important;
-    right: 16px !important;
+    left: calc(env(safe-area-inset-left, 0px) + 16px) !important;
+    right: auto !important;
     bottom: calc(env(safe-area-inset-bottom, 0px) + 16px) !important;
     z-index: 45 !important;
     width: 48px !important;
@@ -4929,7 +4934,8 @@ window.__ModuleLoader__.load({
      overlay no longer phase-gates it), so an active conversation always has a
      Workspace/Session entry point. Placement is pure CSS:
      - hero / blank (frame without [data-phase="active"]): the floating
-       bottom-right button above (existing rules).
+       bottom-left button above (existing rules) — the bottom-right corner is
+       reserved for DSH's own narrow sidebar toggle.
      - active conversation: a compact top-left hamburger over the session
        header, with the header yielding left padding so the crumbs never
        slide under it.
@@ -5509,7 +5515,8 @@ window.__ModuleLoader__.load({
 		* conversations), so an active conversation always has a Workspace/Session
 		* entry point. Placement is pure CSS in mobile.css.ts (`:has([data-phase=
 		* "active"])` moves it to the top-left over the session header; hero keeps
-		* the floating bottom-right position). This absorbs the upstream
+		* the floating bottom-left position, so it never covers the shell's own
+		* bottom-right sidebar toggle). This absorbs the upstream
 		* dsh-web-mobile v1.5.0 MobileNavToggle design idea (always-available
 		* entry + `ctx.layout.toggleSidebar()`) while keeping this plugin's own
 		* device-classifier gating.

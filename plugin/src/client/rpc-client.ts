@@ -3,7 +3,7 @@
  *
  * Calls ride `ctx.connection.rpc.call('/dsh-remote', '<endpoint>', payload)`
  * — the same official Connection transport the rest of the UI uses, on a
- * dedicated channel registered with `authority: 'loopback'`. Operational
+ * dedicated channel the host half mounts as a private web route. Operational
  * failures arrive as RpcError with the stable plugin error code in
  * `message`; every method translates that back to the code.
  */

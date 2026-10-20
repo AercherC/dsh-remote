@@ -26,6 +26,14 @@ describe('mobile.css.ts — R13 always-visible sidebar entry', () => {
     expect(MOBILE_CSS).toMatch(/:has\(\[data-phase="active"\]\)[^{]*\[data-dsh-remote-mobile="fab"\]/)
   })
 
+  it('anchors the hero-phase opener bottom-LEFT, clear of the shell own bottom-right toggle', () => {
+    // The shell renders its narrow-viewport sidebar toggle in the bottom-right
+    // corner; a right-anchored plugin FAB covered it.
+    expect(MOBILE_CSS).toMatch(
+      /\[data-dsh-remote-mobile="fab"\]\s*\{[^}]*left: calc\(env\(safe-area-inset-left[^}]*right: auto/s,
+    )
+  })
+
   it('yields the session header next to the active-phase opener', () => {
     expect(MOBILE_CSS).toMatch(
       /:has\(\[data-phase="active"\]\)[^{]*header\s*\{[^}]*padding-left: 52px/,

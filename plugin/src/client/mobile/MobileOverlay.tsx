@@ -9,7 +9,8 @@
  * conversations), so an active conversation always has a Workspace/Session
  * entry point. Placement is pure CSS in mobile.css.ts (`:has([data-phase=
  * "active"])` moves it to the top-left over the session header; hero keeps
- * the floating bottom-right position). This absorbs the upstream
+ * the floating bottom-left position, so it never covers the shell's own
+ * bottom-right sidebar toggle). This absorbs the upstream
  * dsh-web-mobile v1.5.0 MobileNavToggle design idea (always-available
  * entry + `ctx.layout.toggleSidebar()`) while keeping this plugin's own
  * device-classifier gating.

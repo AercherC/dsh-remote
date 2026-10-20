@@ -16,7 +16,7 @@
  */
 import type { UserConfig } from 'tsdown'
 
-const PLUGIN_ID = 'dsh-remote-web-gateway'
+const PLUGIN_ID = 'dsh-remote-phone'
 
 /** The exact DSH platform-module table (packages/client/web/src/platform.ts). */
 const PLATFORM_MODULES = [

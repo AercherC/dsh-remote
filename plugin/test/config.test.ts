@@ -73,9 +73,9 @@ describe('home + directories', () => {
 
   it('keeps state and binary cache apart under the plugin root', () => {
     const dirs = pluginDirectories('/dsh-home')
-    expect(dirs.stateDir).toBe(join('/dsh-home', 'plugins', 'dsh-remote-web-gateway', 'state'))
-    expect(dirs.cacheDir).toBe(join('/dsh-home', 'plugins', 'dsh-remote-web-gateway', 'bin', 'cache'))
-    expect(dirs.deviceSessionFile).toBe(join('/dsh-home', 'plugins', 'dsh-remote-web-gateway', 'state', 'devices.json'))
+    expect(dirs.stateDir).toBe(join('/dsh-home', 'plugins', 'dsh-remote-phone', 'state'))
+    expect(dirs.cacheDir).toBe(join('/dsh-home', 'plugins', 'dsh-remote-phone', 'bin', 'cache'))
+    expect(dirs.deviceSessionFile).toBe(join('/dsh-home', 'plugins', 'dsh-remote-phone', 'state', 'devices.json'))
   })
 })
 

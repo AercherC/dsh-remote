@@ -145,9 +145,9 @@ describe('remote runtime', () => {
       hardenDir: async dir => { hardened.push(dir) },
       tunnelOverride: tunnel,
     })
-    expect(existsSync(join(home, 'plugins', 'dsh-remote-web-gateway', 'state'))).toBe(true)
-    expect(existsSync(join(home, 'plugins', 'dsh-remote-web-gateway', 'bin', 'cache'))).toBe(true)
-    expect(hardened).toEqual([join(home, 'plugins', 'dsh-remote-web-gateway')])
+    expect(existsSync(join(home, 'plugins', 'dsh-remote-phone', 'state'))).toBe(true)
+    expect(existsSync(join(home, 'plugins', 'dsh-remote-phone', 'bin', 'cache'))).toBe(true)
+    expect(hardened).toEqual([join(home, 'plugins', 'dsh-remote-phone')])
   })
 
   it('starts OFF: tunnel is never auto-started on plugin load', () => {
@@ -270,7 +270,7 @@ describe('remote runtime', () => {
 
       // D2.1: the state file holds the PLAINTEXT (version 2) so the code can
       // be re-displayed after a restart — no digest-only schema anymore.
-      const file = join(homeA, 'plugins', 'dsh-remote-web-gateway', 'state', 'pairing-long.json')
+      const file = join(homeA, 'plugins', 'dsh-remote-phone', 'state', 'pairing-long.json')
       const raw = readFileSync(file, 'utf8')
       expect(raw).toContain(`"version": 2`)
       expect(raw).toContain(issuedCode)
@@ -325,7 +325,7 @@ describe('remote runtime', () => {
       if (view.state !== 'active') throw new Error('expected active after custom rotate')
       expect(view.code).toBe('012345')
 
-      const file = join(homeA, 'plugins', 'dsh-remote-web-gateway', 'state', 'pairing-long.json')
+      const file = join(homeA, 'plugins', 'dsh-remote-phone', 'state', 'pairing-long.json')
       const raw = readFileSync(file, 'utf8')
       expect(raw).toContain('012345')
     } finally {

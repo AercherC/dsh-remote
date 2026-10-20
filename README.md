@@ -20,7 +20,7 @@
 
 ```text
 帮我安装这个 DSH 插件：
-https://github.com/AercherC/dsh-remote/releases/download/v0.3.0/dsh-remote-phone-0.3.0.tgz
+https://github.com/AercherC/dsh-remote/releases/download/v0.3.1/dsh-remote-phone-0.3.1.tgz
 ```
 
 也可以走插件界面：**插件 → 添加插件 → 安装第三方插件**，填入：

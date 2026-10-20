@@ -1,13 +1,12 @@
 /**
  * Loopback-only management RPC for the plugin.
  *
- * The endpoints live on a DEDICATED logical channel (`/dsh-remote`)
- * registered through `ctx.connection.rpc.handle(..., { authority:
- * 'loopback' })` — the official DSH loopback-authority mechanism
- * (packages/client/connection — the fence refuses any non-loopback Host or
- * cross-site marker). The shared `/api` channel is deliberately NOT used:
- * its interceptor seat is a single-owner slot already claimed by a built-in
- * plugin.
+ * The endpoints live on a DEDICATED logical channel (`/dsh-remote`) whose
+ * prefix route is mounted on the DSH web server by `mountChannel` (index.ts),
+ * behind the same admission fence the shared Connection transport applies
+ * (loopback Host/Origin trust + browser credential). The shared `/api` channel
+ * is deliberately NOT used: its interceptor seat is a single-owner slot
+ * already claimed by a built-in plugin.
  *
  * Defense in depth: the gateway ALSO denies the whole `/dsh-remote` prefix
  * from the public entry, so even a valid device session through the Quick

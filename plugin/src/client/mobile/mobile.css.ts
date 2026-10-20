@@ -77,10 +77,15 @@ export const MOBILE_CSS = `/* ---------- dsh-remote-phone: mobile-only layer (< 
     display: none !important;
   }
 
-  /* --- Floating open button + backdrop (rendered by the overlay) --- */
+  /* --- Floating open button + backdrop (rendered by the overlay) ---
+     Bottom-LEFT on purpose: DSH's own narrow-viewport sidebar toggle sits in
+     the bottom-right corner, and a bottom-right plugin button covered it
+     (users tapping that corner hit the plugin FAB instead of the native
+     control). The right edge is left to the shell. */
   [data-dsh-remote-mobile="fab"] {
     position: fixed !important;
-    right: 16px !important;
+    left: calc(env(safe-area-inset-left, 0px) + 16px) !important;
+    right: auto !important;
     bottom: calc(env(safe-area-inset-bottom, 0px) + 16px) !important;
     z-index: 45 !important;
     width: 48px !important;
@@ -111,7 +116,8 @@ export const MOBILE_CSS = `/* ---------- dsh-remote-phone: mobile-only layer (< 
      overlay no longer phase-gates it), so an active conversation always has a
      Workspace/Session entry point. Placement is pure CSS:
      - hero / blank (frame without [data-phase="active"]): the floating
-       bottom-right button above (existing rules).
+       bottom-left button above (existing rules) — the bottom-right corner is
+       reserved for DSH's own narrow sidebar toggle.
      - active conversation: a compact top-left hamburger over the session
        header, with the header yielding left padding so the crumbs never
        slide under it.

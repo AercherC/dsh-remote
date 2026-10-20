@@ -4,8 +4,9 @@
  * Wires DSH services into the gateway runtime:
  *   - resolves the harness home and the plugin's own state/cache dirs
  *   - starts the loopback gateway targeting THIS DSH web server
- *   - registers the loopback-only management RPC on a dedicated channel
- *     (`authority: 'loopback'`, the official DSH mechanism)
+ *   - mounts the loopback-only management RPC on a dedicated channel as a web
+ *     server prefix route (see mountChannel for why the Connection channel
+ *     registration cannot be used)
  *
  * Plugin load NEVER opens the public network: the tunnel starts OFF and only
  * a user gesture (the settings "开启远程访问" button) starts it.

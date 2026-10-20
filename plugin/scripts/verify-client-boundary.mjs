@@ -35,6 +35,15 @@ const here = dirname(fileURLToPath(import.meta.url))
 const bundlePath = join(here, '..', 'lib', 'client.js')
 
 /**
+ * The bundle's `window.__ModuleLoader__.load({ id })` registration must equal
+ * the published package name: the host resolves a plugin's browser half by
+ * package name, so a stale id here makes that entry fail to activate in
+ * Desktop ("import failed" / "duplicate factory registration"). Read the name
+ * instead of repeating it, so a rename cannot drift again.
+ */
+const expectedBundleId = JSON.parse(readFileSync(join(here, '..', 'package.json'), 'utf8')).name
+
+/**
  * The exact DSH shared browser module table
  * (packages/client/web/src/platform.ts PLATFORM_MODULES) plus the documented
  * client-runtime exemption the plugin's tsdown config keeps external.
@@ -122,7 +131,7 @@ export function staticGate(code) {
  * resolution replica. Returns the factory exports; throws if the bundle
  * requires anything outside the module table.
  */
-export function loaderGate(code, { bundleId = 'dsh-remote-web-gateway' } = {}) {
+export function loaderGate(code, { bundleId = expectedBundleId } = {}) {
   let captured = null
   const windowSink = {
     window: {
