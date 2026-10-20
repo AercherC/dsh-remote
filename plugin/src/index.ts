@@ -1,5 +1,5 @@
 /**
- * dsh-remote-web-gateway — host half.
+ * dsh-remote-phone — host half.
  *
  * Wires DSH services into the gateway runtime:
  *   - resolves the harness home and the plugin's own state/cache dirs
@@ -36,7 +36,7 @@ import { fileURLToPath } from 'node:url'
 const pluginRootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
 /** Stable cordis plugin name. */
-export const name = 'dsh-remote-web-gateway'
+export const name = 'dsh-remote-phone'
 
 /** Services required before this plugin mounts. */
 export const inject = ['connection', 'webServer']
@@ -63,8 +63,8 @@ export function apply(ctx: Context, config?: unknown): void {
   const upstream = new URL(`http://127.0.0.1:${String(ctx.webServer.port)}`)
 
   const logger: GatewayLogger = {
-    info: fields => ctx.logger.info('[dsh-remote-web-gateway] %s', safeJson(fields)),
-    warn: fields => ctx.logger.warn('[dsh-remote-web-gateway] %s', safeJson(fields)),
+    info: fields => ctx.logger.info('[dsh-remote-phone] %s', safeJson(fields)),
+    warn: fields => ctx.logger.warn('[dsh-remote-phone] %s', safeJson(fields)),
   }
 
   let runtime: RemoteRuntime | undefined
@@ -88,13 +88,13 @@ export function apply(ctx: Context, config?: unknown): void {
       authRootUrl: (origin) => ctx.connection.authenticatedUrl(origin),
     }).then((created) => {
       runtime = created
-      ctx.logger.info('[dsh-remote-web-gateway] runtime ready; tunnel is OFF until the user enables remote access')
+      ctx.logger.info('[dsh-remote-phone] runtime ready; tunnel is OFF until the user enables remote access')
       // Automatic update check: throttled host-side to 24h; failures are
       // silent (surfaced only through the settings UI).
       void created.updateCheck(false).catch(() => {})
     }).catch((error: unknown) => {
       startupError = error instanceof Error ? error.message : String(error)
-      ctx.logger.warn('[dsh-remote-web-gateway] runtime failed to start: %s', startupError)
+      ctx.logger.warn('[dsh-remote-phone] runtime failed to start: %s', startupError)
     })
 
     return async () => {
@@ -102,7 +102,7 @@ export function apply(ctx: Context, config?: unknown): void {
       // then the gateway closes and unused tickets are cleared.
       if (runtime !== undefined) await runtime.dispose()
     }
-  }, 'dsh-remote-web-gateway: runtime')
+  }, 'dsh-remote-phone: runtime')
 
   // Loopback-only management RPC on a DEDICATED channel. The gateway denies
   // the same channel prefix from the public entry (defense in depth).
@@ -111,9 +111,9 @@ export function apply(ctx: Context, config?: unknown): void {
       return await createRpcHandler(() => runtime)(endpoint, payload)
     }
     const dispose = ctx.connection.rpc.handle(REMOTE_RPC_CHANNEL, handler)
-    ctx.logger.info('[dsh-remote-web-gateway] management RPC registered on %s (loopback-only)', REMOTE_RPC_CHANNEL)
+    ctx.logger.info('[dsh-remote-phone] management RPC registered on %s (loopback-only)', REMOTE_RPC_CHANNEL)
     return dispose
-  }, 'dsh-remote-web-gateway: loopback management rpc')
+  }, 'dsh-remote-phone: loopback management rpc')
 
   // R14: mobile workspace directory browse — READ-ONLY listing for the
   // mobile workspace picker. Same loopback-authority mechanism, but on a
@@ -127,7 +127,7 @@ export function apply(ctx: Context, config?: unknown): void {
       WORKSPACE_BROWSE_CHANNEL,
       createWorkspaceBrowseHandler(),
     )
-    ctx.logger.info('[dsh-remote-web-gateway] workspace browse RPC registered on %s (device-session authenticated via the gateway)', WORKSPACE_BROWSE_CHANNEL)
+    ctx.logger.info('[dsh-remote-phone] workspace browse RPC registered on %s (device-session authenticated via the gateway)', WORKSPACE_BROWSE_CHANNEL)
     return dispose
-  }, 'dsh-remote-web-gateway: workspace browse rpc')
+  }, 'dsh-remote-phone: workspace browse rpc')
 }

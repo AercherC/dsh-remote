@@ -4850,7 +4850,7 @@ window.__ModuleLoader__.load({
 		* only affects wide / landscape PHONES (centered sheets instead of
 		* edge-to-edge).
 		*/
-		const MOBILE_CSS = `/* ---------- dsh-remote-web-gateway: mobile-only layer (< 1024px) ---------- */
+		const MOBILE_CSS = `/* ---------- dsh-remote-phone: mobile-only layer (< 1024px) ---------- */
 
 @media (max-width: 1023px) {
   /* Phone chrome: keep pan/pinch zoom, kill double-tap zoom and the 300ms
@@ -5170,7 +5170,7 @@ window.__ModuleLoader__.load({
 		* landscape (short side 1024) still renders the sheet. A tablet therefore
 		* gets the browse picker without the drawer / fab / backdrop / phone chrome.
 		*/
-		const PICKER_CSS = `/* ---------- dsh-remote-web-gateway: mobile workspace picker (device-gated) ---------- */
+		const PICKER_CSS = `/* ---------- dsh-remote-phone: mobile workspace picker (device-gated) ---------- */
 
   [data-dsh-remote-workspace-picker] {
     position: fixed !important;
@@ -5884,7 +5884,7 @@ window.__ModuleLoader__.load({
 		//#endregion
 		//#region src/client/index.ts
 		/** Stable plugin id (package name) — used for the style-tag ownership mark. */
-		const PLUGIN_ID = "dsh-remote-web-gateway";
+		const PLUGIN_ID = "dsh-remote-phone";
 		/** Required services (cordis fiber inject). */
 		const inject = [
 			"slots",
@@ -5900,13 +5900,13 @@ window.__ModuleLoader__.load({
 			ctx.effect(() => ctx.locale.register(NS, {
 				zh,
 				en
-			}), "dsh-remote-web-gateway: dictionaries");
+			}), "dsh-remote-phone: dictionaries");
 			const detection = getPhoneDetection();
 			const pickerDevice = detection.isPhone || detection.isTablet;
-			ctx.effect(() => detection.isPhone ? installMobileCss(PLUGIN_ID) : () => {}, "dsh-remote-web-gateway: mobile styles");
-			ctx.effect(() => detection.isPhone ? installPhoneChrome() : () => {}, "dsh-remote-web-gateway: phone chrome");
-			ctx.effect(() => pickerDevice ? installPickerCss(PLUGIN_ID) : () => {}, "dsh-remote-web-gateway: picker styles");
-			ctx.effect(() => installSettingsNavIcon(), "dsh-remote-web-gateway: settings-nav icon");
+			ctx.effect(() => detection.isPhone ? installMobileCss(PLUGIN_ID) : () => {}, "dsh-remote-phone: mobile styles");
+			ctx.effect(() => detection.isPhone ? installPhoneChrome() : () => {}, "dsh-remote-phone: phone chrome");
+			ctx.effect(() => pickerDevice ? installPickerCss(PLUGIN_ID) : () => {}, "dsh-remote-phone: picker styles");
+			ctx.effect(() => installSettingsNavIcon(), "dsh-remote-phone: settings-nav icon");
 			const remote = createRemoteClient(ctx.get("connection"));
 			ctx.slots.inject("shell.overlay", () => ctx.slots.register({
 				name: "shell.overlay",

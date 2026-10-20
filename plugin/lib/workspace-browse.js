@@ -34,7 +34,7 @@ const execFileAsync = promisify(execFile);
 export function resolveWorkspaceBrowseConfig(options) {
     const maxEntries = options?.maxEntries ?? 1000;
     if (!Number.isInteger(maxEntries) || maxEntries < 1) {
-        throw new Error('dsh-remote-web-gateway: workspace browse maxEntries must be a positive integer');
+        throw new Error('dsh-remote-phone: workspace browse maxEntries must be a positive integer');
     }
     return {
         maxEntries,

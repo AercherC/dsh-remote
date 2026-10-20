@@ -1,6 +1,6 @@
 {
-  "name": "dsh-remote-web-gateway",
-  "version": "0.2.4",
+  "name": "dsh-remote-phone",
+  "version": "0.3.0",
   "description": "DSH Remote Web Gateway — DSH native plugin: one-click phone/tablet remote access to the DeepSeek Harness Web GUI via Cloudflare Quick Tunnel + QR/pairing-code pairing + device management",
   "type": "module",
   "license": "MIT",

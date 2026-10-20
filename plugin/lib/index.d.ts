@@ -1,5 +1,5 @@
 /**
- * dsh-remote-web-gateway — host half.
+ * dsh-remote-phone — host half.
  *
  * Wires DSH services into the gateway runtime:
  *   - resolves the harness home and the plugin's own state/cache dirs
@@ -15,7 +15,7 @@
  */
 import type { Context } from '@deepseek-ai/cordis';
 /** Stable cordis plugin name. */
-export declare const name = "dsh-remote-web-gateway";
+export declare const name = "dsh-remote-phone";
 /** Services required before this plugin mounts. */
 export declare const inject: string[];
 /**

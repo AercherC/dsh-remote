@@ -32,7 +32,7 @@
  * edge-to-edge).
  */
 
-export const MOBILE_CSS = `/* ---------- dsh-remote-web-gateway: mobile-only layer (< 1024px) ---------- */
+export const MOBILE_CSS = `/* ---------- dsh-remote-phone: mobile-only layer (< 1024px) ---------- */
 
 @media (max-width: 1023px) {
   /* Phone chrome: keep pan/pinch zoom, kill double-tap zoom and the 300ms
@@ -353,7 +353,7 @@ export const MOBILE_CSS = `/* ---------- dsh-remote-web-gateway: mobile-only lay
  * landscape (short side 1024) still renders the sheet. A tablet therefore
  * gets the browse picker without the drawer / fab / backdrop / phone chrome.
  */
-export const PICKER_CSS = `/* ---------- dsh-remote-web-gateway: mobile workspace picker (device-gated) ---------- */
+export const PICKER_CSS = `/* ---------- dsh-remote-phone: mobile workspace picker (device-gated) ---------- */
 
   [data-dsh-remote-workspace-picker] {
     position: fixed !important;

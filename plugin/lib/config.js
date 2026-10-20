@@ -24,7 +24,7 @@ function integer(raw, name, fallback, minimum, maximum) {
     if (raw === undefined)
         return fallback;
     if (typeof raw !== 'number' || !Number.isInteger(raw) || raw < minimum || raw > maximum) {
-        throw new Error(`dsh-remote-web-gateway: config ${name} must be an integer between ${String(minimum)} and ${String(maximum)}`);
+        throw new Error(`dsh-remote-phone: config ${name} must be an integer between ${String(minimum)} and ${String(maximum)}`);
     }
     return raw;
 }
@@ -35,7 +35,7 @@ function integer(raw, name, fallback, minimum, maximum) {
 export function resolvePluginConfig(raw) {
     const value = (raw === null || raw === undefined) ? {} : raw;
     if (typeof value !== 'object' || Array.isArray(value)) {
-        throw new Error('dsh-remote-web-gateway: config must be an object');
+        throw new Error('dsh-remote-phone: config must be an object');
     }
     const config = value;
     const customProxyUrl = customProxy(config.customProxyUrl);
@@ -60,7 +60,7 @@ function profileName(raw, fallback) {
     if (raw === undefined)
         return fallback;
     if (typeof raw !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(raw)) {
-        throw new Error('dsh-remote-web-gateway: config cliProfile must match ^[A-Za-z0-9_-]{1,64}$');
+        throw new Error('dsh-remote-phone: config cliProfile must match ^[A-Za-z0-9_-]{1,64}$');
     }
     return raw;
 }
@@ -68,7 +68,7 @@ function downloadNetworkMode(raw, fallback) {
     if (raw === undefined)
         return fallback;
     if (raw !== 'auto' && raw !== 'direct' && raw !== 'custom') {
-        throw new Error('dsh-remote-web-gateway: config downloadNetwork must be "auto", "direct", or "custom"');
+        throw new Error('dsh-remote-phone: config downloadNetwork must be "auto", "direct", or "custom"');
     }
     return raw;
 }
@@ -76,7 +76,7 @@ function downloadSourceMode(raw, fallback) {
     if (raw === undefined)
         return fallback;
     if (raw !== 'auto' && raw !== 'official' && raw !== 'mirror') {
-        throw new Error('dsh-remote-web-gateway: config downloadSource must be "auto", "official", or "mirror"');
+        throw new Error('dsh-remote-phone: config downloadSource must be "auto", "official", or "mirror"');
     }
     return raw;
 }
@@ -90,7 +90,7 @@ function customProxy(raw) {
     if (raw === undefined)
         return undefined;
     if (typeof raw !== 'string' || raw.trim() === '') {
-        throw new Error('dsh-remote-web-gateway: config customProxyUrl must be a non-empty http(s) URL');
+        throw new Error('dsh-remote-phone: config customProxyUrl must be a non-empty http(s) URL');
     }
     const value = raw.trim();
     let url;
@@ -98,13 +98,13 @@ function customProxy(raw) {
         url = new URL(value);
     }
     catch {
-        throw new Error('dsh-remote-web-gateway: config customProxyUrl must be a valid http(s) URL');
+        throw new Error('dsh-remote-phone: config customProxyUrl must be a valid http(s) URL');
     }
     if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-        throw new Error('dsh-remote-web-gateway: config customProxyUrl must use http: or https: (SOCKS/PAC are not supported)');
+        throw new Error('dsh-remote-phone: config customProxyUrl must use http: or https: (SOCKS/PAC are not supported)');
     }
     if (url.username !== '' || url.password !== '') {
-        throw new Error('dsh-remote-web-gateway: config customProxyUrl must not contain credentials; use the HTTPS_PROXY environment variable instead');
+        throw new Error('dsh-remote-phone: config customProxyUrl must not contain credentials; use the HTTPS_PROXY environment variable instead');
     }
     return value;
 }

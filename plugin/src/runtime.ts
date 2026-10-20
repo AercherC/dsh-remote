@@ -187,7 +187,7 @@ export async function createRemoteRuntime(options: RemoteRuntimeOptions): Promis
   const updater = options.updater ?? createUpdateService({
     pluginRootDir: options.pluginRootDir,
     stateFile: dirs.updateStateFile,
-    registryPackage: 'dsh-remote-web-gateway',
+    registryPackage: 'dsh-remote-phone',
     githubRepo: 'AercherC/dsh-remote',
     cliProfile: options.config.cliProfile,
     minCheckIntervalMs: options.config.updateIntervalMs,

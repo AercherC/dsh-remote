@@ -1,5 +1,5 @@
 /**
- * dsh-remote-web-gateway — host half.
+ * dsh-remote-phone — host half.
  *
  * Wires DSH services into the gateway runtime:
  *   - resolves the harness home and the plugin's own state/cache dirs
@@ -24,7 +24,7 @@ import { fileURLToPath } from 'node:url';
 /** The installed plugin package root (parent of this module's directory). */
 const pluginRootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 /** Stable cordis plugin name. */
-export const name = 'dsh-remote-web-gateway';
+export const name = 'dsh-remote-phone';
 /** Services required before this plugin mounts. */
 export const inject = ['connection', 'webServer'];
 function safeJson(fields) {
@@ -47,8 +47,8 @@ export function apply(ctx, config) {
     // including an OS-assigned port.
     const upstream = new URL(`http://127.0.0.1:${String(ctx.webServer.port)}`);
     const logger = {
-        info: fields => ctx.logger.info('[dsh-remote-web-gateway] %s', safeJson(fields)),
-        warn: fields => ctx.logger.warn('[dsh-remote-web-gateway] %s', safeJson(fields)),
+        info: fields => ctx.logger.info('[dsh-remote-phone] %s', safeJson(fields)),
+        warn: fields => ctx.logger.warn('[dsh-remote-phone] %s', safeJson(fields)),
     };
     let runtime;
     let startupError;
@@ -70,13 +70,13 @@ export function apply(ctx, config) {
             authRootUrl: (origin) => ctx.connection.authenticatedUrl(origin),
         }).then((created) => {
             runtime = created;
-            ctx.logger.info('[dsh-remote-web-gateway] runtime ready; tunnel is OFF until the user enables remote access');
+            ctx.logger.info('[dsh-remote-phone] runtime ready; tunnel is OFF until the user enables remote access');
             // Automatic update check: throttled host-side to 24h; failures are
             // silent (surfaced only through the settings UI).
             void created.updateCheck(false).catch(() => { });
         }).catch((error) => {
             startupError = error instanceof Error ? error.message : String(error);
-            ctx.logger.warn('[dsh-remote-web-gateway] runtime failed to start: %s', startupError);
+            ctx.logger.warn('[dsh-remote-phone] runtime failed to start: %s', startupError);
         });
         return async () => {
             // Disposal: tunnel stop clears the origin BEFORE killing the process,
@@ -84,7 +84,7 @@ export function apply(ctx, config) {
             if (runtime !== undefined)
                 await runtime.dispose();
         };
-    }, 'dsh-remote-web-gateway: runtime');
+    }, 'dsh-remote-phone: runtime');
     // Loopback-only management RPC on a DEDICATED channel. The gateway denies
     // the same channel prefix from the public entry (defense in depth).
     ctx.effect(() => {
@@ -92,9 +92,9 @@ export function apply(ctx, config) {
             return await createRpcHandler(() => runtime)(endpoint, payload);
         };
         const dispose = ctx.connection.rpc.handle(REMOTE_RPC_CHANNEL, handler);
-        ctx.logger.info('[dsh-remote-web-gateway] management RPC registered on %s (loopback-only)', REMOTE_RPC_CHANNEL);
+        ctx.logger.info('[dsh-remote-phone] management RPC registered on %s (loopback-only)', REMOTE_RPC_CHANNEL);
         return dispose;
-    }, 'dsh-remote-web-gateway: loopback management rpc');
+    }, 'dsh-remote-phone: loopback management rpc');
     // R14: mobile workspace directory browse — READ-ONLY listing for the
     // mobile workspace picker. Same loopback-authority mechanism, but on a
     // channel NOT in the gateway's deniedPublicPaths: paired phones reach it
@@ -104,7 +104,7 @@ export function apply(ctx, config) {
     // no create/delete/modify (see workspace-browse.ts).
     ctx.effect(() => {
         const dispose = ctx.connection.rpc.handle(WORKSPACE_BROWSE_CHANNEL, createWorkspaceBrowseHandler());
-        ctx.logger.info('[dsh-remote-web-gateway] workspace browse RPC registered on %s (device-session authenticated via the gateway)', WORKSPACE_BROWSE_CHANNEL);
+        ctx.logger.info('[dsh-remote-phone] workspace browse RPC registered on %s (device-session authenticated via the gateway)', WORKSPACE_BROWSE_CHANNEL);
         return dispose;
-    }, 'dsh-remote-web-gateway: workspace browse rpc');
+    }, 'dsh-remote-phone: workspace browse rpc');
 }

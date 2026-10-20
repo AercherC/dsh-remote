@@ -34,7 +34,7 @@ export function resolveDshHome(env = process.env) {
  * requirement; the whole plugin root is the unit the Windows ACL protects.
  */
 export function pluginDirectories(home) {
-    const root = join(home, 'plugins', 'dsh-remote-web-gateway');
+    const root = join(home, 'plugins', 'dsh-remote-phone');
     const stateDir = join(root, 'state');
     return {
         root,

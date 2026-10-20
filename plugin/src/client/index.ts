@@ -1,5 +1,5 @@
 /**
- * dsh-remote-web-gateway — browser half.
+ * dsh-remote-phone — browser half.
  *
  *   - registers the 远程控制 settings section (QR + pairing code +
  *     device management) over the loopback-only management RPC
@@ -43,7 +43,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-workspace/client'
 
 /** Stable plugin id (package name) — used for the style-tag ownership mark. */
-const PLUGIN_ID = 'dsh-remote-web-gateway'
+const PLUGIN_ID = 'dsh-remote-phone'
 
 /** Required services (cordis fiber inject). */
 export const inject = ['slots', 'locale', 'connection', 'layout']
@@ -53,7 +53,7 @@ export const inject = ['slots', 'locale', 'connection', 'layout']
  * @param ctx - the browser plugin context.
  */
 export function apply(ctx: ClientContext): void {
-  ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'dsh-remote-web-gateway: dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'dsh-remote-phone: dictionaries')
 
   // R06C4C/R06C4C1: the ENTIRE phone layer is gated on the device classifier
   // (phone → existing Phone Enhancements; NOT phone → native DSH UI, nothing
@@ -65,13 +65,13 @@ export function apply(ctx: ClientContext): void {
   // (drawer / fab / backdrop / phone chrome) stays phone-only.
   const pickerDevice = detection.isPhone || detection.isTablet
 
-  ctx.effect(() => (detection.isPhone ? installMobileCss(PLUGIN_ID) : () => {}), 'dsh-remote-web-gateway: mobile styles')
-  ctx.effect(() => (detection.isPhone ? installPhoneChrome() : () => {}), 'dsh-remote-web-gateway: phone chrome')
-  ctx.effect(() => (pickerDevice ? installPickerCss(PLUGIN_ID) : () => {}), 'dsh-remote-web-gateway: picker styles')
+  ctx.effect(() => (detection.isPhone ? installMobileCss(PLUGIN_ID) : () => {}), 'dsh-remote-phone: mobile styles')
+  ctx.effect(() => (detection.isPhone ? installPhoneChrome() : () => {}), 'dsh-remote-phone: phone chrome')
+  ctx.effect(() => (pickerDevice ? installPickerCss(PLUGIN_ID) : () => {}), 'dsh-remote-phone: picker styles')
 
   // R07: the settings nav glyph for our section is shell-hardcoded (unknown id →
   // the gear, same as General); swap it for a phone+monitor icon. Purely presentational.
-  ctx.effect(() => installSettingsNavIcon(), 'dsh-remote-web-gateway: settings-nav icon')
+  ctx.effect(() => installSettingsNavIcon(), 'dsh-remote-phone: settings-nav icon')
 
   const remote = createRemoteClient(ctx.get('connection') as ConnectionHandle)
 
