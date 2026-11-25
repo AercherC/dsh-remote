@@ -17,9 +17,21 @@ import { describe, expect, it } from 'vitest'
 import { MOBILE_CSS, PICKER_CSS } from '../src/client/mobile/mobile.css.ts'
 
 describe('mobile.css.ts — R13 always-visible sidebar entry', () => {
-  it('keeps the drawer restructure (grid 1fr 0 0 + translateX(-110%))', () => {
-    expect(MOBILE_CSS).toContain('grid-template-columns: minmax(0, 1fr) 0 0')
+  it('keeps the drawer restructure (translateX(-110%))', () => {
     expect(MOBILE_CSS).toContain('transform: translateX(-110%)')
+  })
+
+  it('does NOT override the frame grid tracks (DSH >= 0.2.2 owns them)', () => {
+    // Regression guard for the DSH 0.2.2 blank-screen bug: the frame rule used
+    // to force `grid-template-columns: minmax(0, 1fr) 0 0 !important`, which
+    // widened track 1 while `.centerCol` stayed pinned to track 2 (= 0px), so
+    // the main panel rendered 0px wide on every phone. DSH 0.2.2 writes the
+    // tracks inline and gives the centre `grid-column: 2`, so any grid override
+    // here is wrong by construction.
+    expect(MOBILE_CSS).not.toContain('grid-template-columns: minmax(0, 1fr) 0 0')
+    const frameRule = MOBILE_CSS.match(/\[data-dsh-remote-mobile="frame"\]\s*\{[^}]*\}/)?.[0] ?? ''
+    expect(frameRule).not.toContain('grid-template-columns')
+    expect(frameRule).toContain('position: relative')
   })
 
   it('places the opener top-left inside an active conversation', () => {

@@ -4864,10 +4864,28 @@ window.__ModuleLoader__.load({
      The frame is found by the overlay effect ([data-dsh-remote-mobile]);
      the first grid child is DSH's sidebar column. Closed: fully off-screen
      (translateX(-110%)). Open (frame WITHOUT data-sidebar-collapsed):
-     transform:none so fixed-position descendants stay viewport-anchored. */
+     transform:none so fixed-position descendants stay viewport-anchored.
+
+     DSH 0.2.2 changed the frame contract this rule used to depend on:
+       - AppFrame now writes grid-template-columns INLINE on the frame
+         (0px minmax(0px,1fr) minmax(0px,0px)), i.e. the first track is the
+         collapsed sidebar and only the SECOND track holds the centre;
+       - AppFrame.module.css gives .centerCol an explicit grid-column: 2;
+       - drawer mode takes the sidebar out of flow
+         (.frame[data-sidebar-drawer] .sidebarCol -> position: absolute).
+
+     The old override below therefore became actively harmful: forcing
+     minmax(0, 1fr) 0 0 !important (the 0.2.1 shape, where the centre
+     AUTO-PLACED into track 1) widened track 1 to the full viewport while
+     .centerCol stayed pinned to track 2 - which resolves to 0px. The whole
+     main panel rendered 0px wide, so a phone showed the shell (hamburger,
+     floating entry) with a completely blank content area.
+
+     Track solving is no longer this plugin's job: DSH 0.2.2 owns it and puts
+     the centre at full width on its own. The drawer below is pure
+     positioning and needs no grid override. */
   [data-dsh-remote-mobile="frame"] {
     position: relative !important;
-    grid-template-columns: minmax(0, 1fr) 0 0 !important;
     padding-top: env(safe-area-inset-top, 0px) !important;
   }
 
