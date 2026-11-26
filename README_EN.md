@@ -14,6 +14,43 @@ Securely use the **DeepSeek Harness (DSH)** running on your computer from a phon
 
 Projects, sessions, tools, files, and Agents still run on the computer — the mobile device only provides remote access.
 
+## One-click install
+
+Paste the whole block below **into a DSH conversation** and let DSH install it (no clone, no pnpm, no local build):
+
+```text
+帮我安装这个 DSH 插件：
+https://github.com/AercherC/dsh-remote/releases/latest/download/dsh-remote-phone-0.3.2.tgz
+```
+
+> `releases/latest/download/` always resolves to the newest Release, but the **file name carries the version**, so this command needs the new file name after each release. For an address that never changes, see "Stable install address" below.
+
+After installing, **quit DSH completely and open it again** (this touches Host-side code; refreshing the page is not enough), then go to:
+
+```text
+Settings -> Remote Control
+```
+
+Turn on remote control and wait for the Quick Tunnel; then scan the QR code or enter the pairing code from your phone.
+
+### Stable install address
+
+Every release also uploads a copy under a **fixed file name**, so this address never changes and always points at the newest version:
+
+```text
+帮我安装这个 DSH 插件：
+https://github.com/AercherC/dsh-remote/releases/latest/download/dsh-remote-phone-latest.tgz
+```
+
+Suitable for scripts and long-lived subscriptions that should not chase a new file name each release.
+
+## Update
+
+The plugin ships a version check: `Settings -> Remote Control -> Check for updates`.
+
+- The check queries npm first, then falls back to this repository's GitHub Releases and takes the highest stable version.
+- From 0.3.2 onward the phone main content area no longer renders blank on DSH 0.2.2.
+
 ## Features
 
 ### 🤖 Android app

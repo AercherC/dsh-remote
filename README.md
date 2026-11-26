@@ -20,8 +20,10 @@
 
 ```text
 帮我安装这个 DSH 插件：
-https://github.com/AercherC/dsh-remote/releases/download/v0.3.1/dsh-remote-phone-0.3.1.tgz
+https://github.com/AercherC/dsh-remote/releases/latest/download/dsh-remote-phone-0.3.2.tgz
 ```
+
+> `releases/latest/download/` 会自动解析到最新 Release，但**文件名带版本号**，所以发新版后这条命令需要同步换成新文件名。想长期固定一个永不失效的地址，见下方「稳定安装地址」。
 
 安装完成后，**完全退出并重新打开 DSH**（本次涉及 Host 侧代码，仅刷新页面不够），然后进入：
 
@@ -30,6 +32,24 @@ https://github.com/AercherC/dsh-remote/releases/download/v0.3.1/dsh-remote-phone
 ```
 
 开启远程控制，等待 Quick Tunnel 建立后，即可用手机扫码或输入配对码连接。
+
+### 稳定安装地址
+
+每次发版都会额外上传一个**固定文件名**的副本，地址永远不变、永远指向最新版：
+
+```text
+帮我安装这个 DSH 插件：
+https://github.com/AercherC/dsh-remote/releases/latest/download/dsh-remote-phone-latest.tgz
+```
+
+适合写进脚本或长期订阅，不用每次换文件名。
+
+## 更新
+
+插件内置版本检查：`设置 → 远程控制 → 检查更新`。
+
+- 检查会先查 npm，再回退查本仓库的 GitHub Releases，取其中最高的稳定版。
+- 安装 0.3.2 及以上时，运行在 DSH 0.2.2 上不再出现手机端主内容区空白。
 
 ## 主要功能
 
